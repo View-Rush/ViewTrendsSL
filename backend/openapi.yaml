@@ -1,0 +1,5170 @@
+openapi: 3.0.3
+info:
+  contact:
+    email: support@viewpredict.ai
+    name: ViewPredict AI Support
+    url: https://viewpredict.ai/support
+  description: "Complete API for YouTube view count prediction platform with user\
+    \ authentication, \nprediction management, analytics, and channel integration.\n"
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+  title: ViewPredict AI - YouTube View Count Prediction API
+  version: 1.0.0
+servers:
+- description: Production server
+  url: https://api.viewpredict.ai/v1
+- description: Staging server
+  url: https://staging-api.viewpredict.ai/v1
+- description: Local development server
+  url: http://localhost:3000/v1
+security:
+- BearerAuth: []
+tags:
+- description: User authentication and authorization endpoints
+  name: Authentication
+- description: User profile and settings management
+  name: Users
+- description: Video view count prediction operations
+  name: Predictions
+- description: Prediction history management
+  name: History
+- description: Analytics and insights endpoints
+  name: Analytics
+- description: YouTube channel connection and management
+  name: Channels
+- description: User notification management
+  name: Notifications
+paths:
+  /auth/register:
+    post:
+      description: Create a new user account with email and password
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/_auth_register_post_request"
+        required: true
+      responses:
+        "201":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/_auth_register_post_201_response"
+          description: User registered successfully
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "409":
+          $ref: "#/components/responses/Conflict"
+      security: []
+      summary: Register a new user
+      tags:
+      - Authentication
+  /auth/login:
+    post:
+      description: Authenticate user with email and password
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/_auth_login_post_request"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/_auth_login_post_200_response"
+          description: Login successful
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "429":
+          $ref: "#/components/responses/TooManyRequests"
+      security: []
+      summary: Login user
+      tags:
+      - Authentication
+  /auth/google:
+    post:
+      description: Authenticate or register user using Google OAuth token
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/_auth_google_post_request"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/_auth_login_post_200_response"
+          description: Authentication successful
+        "400":
+          $ref: "#/components/responses/BadRequest"
+      security: []
+      summary: Google OAuth authentication
+      tags:
+      - Authentication
+  /auth/refresh:
+    post:
+      description: Get new access token using refresh token
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/_auth_refresh_post_request"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/_auth_refresh_post_200_response"
+          description: Token refreshed successfully
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+      security: []
+      summary: Refresh access token
+      tags:
+      - Authentication
+  /auth/logout:
+    post:
+      description: Invalidate current access token and refresh token
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/_auth_logout_post_200_response"
+          description: Logout successful
+      summary: Logout user
+      tags:
+      - Authentication
+  /auth/forgot-password:
+    post:
+      description: Send password reset email to user
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/_auth_forgot_password_post_request"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/_auth_forgot_password_post_200_response"
+          description: Password reset email sent
+      security: []
+      summary: Request password reset
+      tags:
+      - Authentication
+  /auth/reset-password:
+    post:
+      description: Reset user password using reset token
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/_auth_reset_password_post_request"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/_auth_reset_password_post_200_response"
+          description: Password reset successful
+        "400":
+          $ref: "#/components/responses/BadRequest"
+      security: []
+      summary: Reset password
+      tags:
+      - Authentication
+  /users/me:
+    get:
+      description: Retrieve authenticated user's profile information
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/_users_me_get_200_response"
+          description: User profile retrieved successfully
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+      summary: Get current user profile
+      tags:
+      - Users
+    patch:
+      description: Update authenticated user's profile information
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/_users_me_patch_request"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/_users_me_get_200_response"
+          description: Profile updated successfully
+        "400":
+          $ref: "#/components/responses/BadRequest"
+      summary: Update user profile
+      tags:
+      - Users
+  /users/me/password:
+    put:
+      description: Change authenticated user's password
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/_users_me_password_put_request"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/_users_me_password_put_200_response"
+          description: Password changed successfully
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+      summary: Change password
+      tags:
+      - Users
+  /users/me/stats:
+    get:
+      description: Retrieve user's overall statistics and metrics
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/_users_me_stats_get_200_response"
+          description: Statistics retrieved successfully
+      summary: Get user statistics
+      tags:
+      - Users
+  /users/me/notifications/settings:
+    get:
+      description: Retrieve user's notification preferences
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/_users_me_notifications_settings_get_200_response"
+          description: Notification settings retrieved
+      summary: Get notification settings
+      tags:
+      - Users
+    put:
+      description: Update user's notification preferences
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/NotificationSettings"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/_users_me_notifications_settings_get_200_response"
+          description: Settings updated successfully
+      summary: Update notification settings
+      tags:
+      - Users
+  /predictions:
+    get:
+      description: Retrieve paginated list of user's predictions
+      parameters:
+      - example: 1
+        explode: true
+        in: query
+        name: page
+        required: false
+        schema:
+          default: 1
+          minimum: 1
+          type: integer
+        style: form
+      - example: 20
+        explode: true
+        in: query
+        name: limit
+        required: false
+        schema:
+          default: 20
+          maximum: 100
+          minimum: 1
+          type: integer
+        style: form
+      - example: createdAt
+        explode: true
+        in: query
+        name: sortBy
+        required: false
+        schema:
+          default: createdAt
+          enum:
+          - createdAt
+          - predictedViews
+          - accuracy
+          type: string
+        style: form
+      - example: desc
+        explode: true
+        in: query
+        name: order
+        required: false
+        schema:
+          default: desc
+          enum:
+          - asc
+          - desc
+          type: string
+        style: form
+      - example: Gaming
+        explode: true
+        in: query
+        name: category
+        required: false
+        schema:
+          type: string
+        style: form
+      - example: completed
+        explode: true
+        in: query
+        name: status
+        required: false
+        schema:
+          enum:
+          - pending
+          - tracking
+          - completed
+          type: string
+        style: form
+      - example: 2025-01-01
+        explode: true
+        in: query
+        name: dateFrom
+        required: false
+        schema:
+          format: date
+          type: string
+        style: form
+      - example: 2025-12-31
+        explode: true
+        in: query
+        name: dateTo
+        required: false
+        schema:
+          format: date
+          type: string
+        style: form
+      - description: Search in video titles
+        example: How to code
+        explode: true
+        in: query
+        name: search
+        required: false
+        schema:
+          type: string
+        style: form
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/_predictions_get_200_response"
+          description: Predictions retrieved successfully
+      summary: List user predictions
+      tags:
+      - Predictions
+    post:
+      description: Submit video metadata to predict view count
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PredictionRequest"
+        required: true
+      responses:
+        "201":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/_predictions_post_201_response"
+          description: Prediction created successfully
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "402":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/_predictions_post_402_response"
+          description: Insufficient credits
+        "429":
+          $ref: "#/components/responses/TooManyRequests"
+      summary: Create new prediction
+      tags:
+      - Predictions
+  /predictions/{id}:
+    delete:
+      description: Delete a specific prediction from history
+      parameters:
+      - example: pred_abc123
+        explode: false
+        in: path
+        name: id
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/_predictions__id__delete_200_response"
+          description: Prediction deleted successfully
+        "404":
+          $ref: "#/components/responses/NotFound"
+      summary: Delete prediction
+      tags:
+      - Predictions
+    get:
+      description: Retrieve detailed information about a specific prediction
+      parameters:
+      - example: pred_abc123
+        explode: false
+        in: path
+        name: id
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/_predictions__id__get_200_response"
+          description: Prediction retrieved successfully
+        "404":
+          $ref: "#/components/responses/NotFound"
+      summary: Get prediction details
+      tags:
+      - Predictions
+    patch:
+      description: Update prediction with actual view count for tracking
+      parameters:
+      - example: pred_abc123
+        explode: false
+        in: path
+        name: id
+        required: true
+        schema:
+          type: string
+        style: simple
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/_predictions__id__patch_request"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/_predictions__id__get_200_response"
+          description: Prediction updated successfully
+      summary: Update prediction
+      tags:
+      - Predictions
+  /predictions/{id}/repredict:
+    post:
+      description: Create a new prediction based on previous prediction's data
+      parameters:
+      - example: pred_abc123
+        explode: false
+        in: path
+        name: id
+        required: true
+        schema:
+          type: string
+        style: simple
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/_predictions__id__repredict_post_request"
+      responses:
+        "201":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/_predictions_post_201_response"
+          description: New prediction created
+      summary: Rerun prediction
+      tags:
+      - Predictions
+  /predictions/bulk-delete:
+    delete:
+      description: Delete multiple predictions at once
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/_predictions_bulk_delete_delete_request"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/_predictions_bulk_delete_delete_200_response"
+          description: Predictions deleted successfully
+      summary: Delete multiple predictions
+      tags:
+      - Predictions
+  /predictions/export:
+    get:
+      description: Export user's predictions as CSV
+      parameters:
+      - example: csv
+        explode: true
+        in: query
+        name: format
+        required: false
+        schema:
+          default: csv
+          enum:
+          - csv
+          - json
+          type: string
+        style: form
+      - example: 2025-01-01
+        explode: true
+        in: query
+        name: dateFrom
+        required: false
+        schema:
+          format: date
+          type: string
+        style: form
+      - example: 2025-12-31
+        explode: true
+        in: query
+        name: dateTo
+        required: false
+        schema:
+          format: date
+          type: string
+        style: form
+      responses:
+        "200":
+          content:
+            text/csv:
+              schema:
+                format: binary
+                type: string
+            application/json:
+              schema:
+                items:
+                  $ref: "#/components/schemas/PredictionDetail"
+                type: array
+          description: Export file generated
+      summary: Export predictions
+      tags:
+      - Predictions
+  /predictions/drafts:
+    get:
+      description: Retrieve user's saved prediction drafts
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/_predictions_drafts_get_200_response"
+          description: Drafts retrieved successfully
+      summary: List saved drafts
+      tags:
+      - Predictions
+    post:
+      description: Save prediction form data as draft
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/_predictions_drafts_post_request"
+        required: true
+      responses:
+        "201":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/_predictions_drafts_post_201_response"
+          description: Draft saved successfully
+      summary: Save prediction draft
+      tags:
+      - Predictions
+  /predictions/drafts/{id}:
+    delete:
+      description: Delete a saved prediction draft
+      parameters:
+      - example: draft_abc123
+        explode: false
+        in: path
+        name: id
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/_predictions_drafts__id__delete_200_response"
+          description: Draft deleted successfully
+      summary: Delete draft
+      tags:
+      - Predictions
+  /analytics/dashboard:
+    get:
+      description: Retrieve comprehensive analytics for dashboard
+      parameters:
+      - example: 30d
+        explode: true
+        in: query
+        name: period
+        required: false
+        schema:
+          default: 30d
+          enum:
+          - 7d
+          - 30d
+          - 3m
+          - 1y
+          - all
+          type: string
+        style: form
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/_analytics_dashboard_get_200_response"
+          description: Analytics retrieved successfully
+      summary: Get dashboard analytics
+      tags:
+      - Analytics
+  /analytics/accuracy-over-time:
+    get:
+      description: Retrieve prediction accuracy trends over time
+      parameters:
+      - example: 30d
+        explode: true
+        in: query
+        name: period
+        required: false
+        schema:
+          default: 30d
+          enum:
+          - 7d
+          - 30d
+          - 3m
+          - 1y
+          - all
+          type: string
+        style: form
+      - example: day
+        explode: true
+        in: query
+        name: groupBy
+        required: false
+        schema:
+          default: day
+          enum:
+          - day
+          - week
+          - month
+          type: string
+        style: form
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/_analytics_accuracy_over_time_get_200_response"
+          description: Accuracy data retrieved
+      summary: Get accuracy over time
+      tags:
+      - Analytics
+  /analytics/predicted-vs-actual:
+    get:
+      description: Retrieve scatter plot data comparing predicted and actual views
+      parameters:
+      - explode: true
+        in: query
+        name: period
+        required: false
+        schema:
+          default: 30d
+          enum:
+          - 7d
+          - 30d
+          - 3m
+          - 1y
+          - all
+          type: string
+        style: form
+      - example: Gaming
+        explode: true
+        in: query
+        name: category
+        required: false
+        schema:
+          type: string
+        style: form
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/_analytics_predicted_vs_actual_get_200_response"
+          description: Comparison data retrieved
+      summary: Get predicted vs actual comparison
+      tags:
+      - Analytics
+  /analytics/category-performance:
+    get:
+      description: Retrieve performance metrics by video category
+      parameters:
+      - explode: true
+        in: query
+        name: period
+        required: false
+        schema:
+          default: 30d
+          enum:
+          - 7d
+          - 30d
+          - 3m
+          - 1y
+          - all
+          type: string
+        style: form
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/_analytics_category_performance_get_200_response"
+          description: Category performance retrieved
+      summary: Get category performance
+      tags:
+      - Analytics
+  /analytics/factor-importance:
+    get:
+      description: Retrieve importance scores for prediction factors
+      parameters:
+      - explode: true
+        in: query
+        name: period
+        required: false
+        schema:
+          default: 30d
+          enum:
+          - 7d
+          - 30d
+          - 3m
+          - 1y
+          - all
+          type: string
+        style: form
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/_analytics_factor_importance_get_200_response"
+          description: Factor importance retrieved
+      summary: Get factor importance
+      tags:
+      - Analytics
+  /analytics/upload-time-heatmap:
+    get:
+      description: Retrieve heatmap data for optimal upload times
+      parameters:
+      - explode: true
+        in: query
+        name: period
+        required: false
+        schema:
+          default: 30d
+          enum:
+          - 30d
+          - 3m
+          - 1y
+          - all
+          type: string
+        style: form
+      - example: America/New_York
+        explode: true
+        in: query
+        name: timezone
+        required: false
+        schema:
+          type: string
+        style: form
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/_analytics_upload_time_heatmap_get_200_response"
+          description: Heatmap data retrieved
+      summary: Get upload time heatmap
+      tags:
+      - Analytics
+  /analytics/insights:
+    get:
+      description: Retrieve AI-generated insights and recommendations
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/_analytics_insights_get_200_response"
+          description: Insights retrieved successfully
+      summary: Get personalized insights
+      tags:
+      - Analytics
+  /channels/connect:
+    post:
+      description: Initiate YouTube channel connection via OAuth
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/_channels_connect_post_200_response"
+          description: OAuth URL generated
+      summary: Connect YouTube channel
+      tags:
+      - Channels
+  /channels/callback:
+    get:
+      description: Handle OAuth callback from YouTube
+      parameters:
+      - example: 4/0AY0e-g7...
+        explode: true
+        in: query
+        name: code
+        required: true
+        schema:
+          type: string
+        style: form
+      - example: abc123xyz
+        explode: true
+        in: query
+        name: state
+        required: true
+        schema:
+          type: string
+        style: form
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/_channels_callback_get_200_response"
+          description: Channel connected successfully
+        "400":
+          $ref: "#/components/responses/BadRequest"
+      security: []
+      summary: OAuth callback
+      tags:
+      - Channels
+  /channels/me:
+    delete:
+      description: Disconnect YouTube channel from account
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/_channels_me_delete_200_response"
+          description: Channel disconnected successfully
+      summary: Disconnect channel
+      tags:
+      - Channels
+    get:
+      description: Retrieve connected YouTube channel information
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/_channels_callback_get_200_response"
+          description: Channel information retrieved
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/_channels_me_get_404_response"
+          description: No channel connected
+      summary: Get connected channel
+      tags:
+      - Channels
+  /channels/me/sync:
+    post:
+      description: Manually trigger channel data synchronization
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/_channels_me_sync_post_200_response"
+          description: Sync initiated successfully
+      summary: Sync channel data
+      tags:
+      - Channels
+  /channels/me/videos:
+    get:
+      description: Retrieve videos from connected YouTube channel
+      parameters:
+      - explode: true
+        in: query
+        name: page
+        required: false
+        schema:
+          default: 1
+          minimum: 1
+          type: integer
+        style: form
+      - explode: true
+        in: query
+        name: limit
+        required: false
+        schema:
+          default: 20
+          maximum: 50
+          minimum: 1
+          type: integer
+        style: form
+      - explode: true
+        in: query
+        name: sortBy
+        required: false
+        schema:
+          default: publishedAt
+          enum:
+          - publishedAt
+          - viewCount
+          - likeCount
+          type: string
+        style: form
+      - explode: true
+        in: query
+        name: order
+        required: false
+        schema:
+          default: desc
+          enum:
+          - asc
+          - desc
+          type: string
+        style: form
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/_channels_me_videos_get_200_response"
+          description: Videos retrieved successfully
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/_channels_me_videos_get_404_response"
+          description: No channel connected
+      summary: Get channel videos
+      tags:
+      - Channels
+  /channels/me/analytics:
+    get:
+      description: Retrieve analytics data from connected YouTube channel
+      parameters:
+      - explode: true
+        in: query
+        name: period
+        required: false
+        schema:
+          default: 30d
+          enum:
+          - 7d
+          - 30d
+          - 3m
+          - 1y
+          type: string
+        style: form
+      - example: "views,subscribers"
+        explode: false
+        in: query
+        name: metrics
+        required: false
+        schema:
+          items:
+            enum:
+            - views
+            - subscribers
+            - estimatedMinutesWatched
+            - averageViewDuration
+            type: string
+          type: array
+        style: form
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/_channels_me_analytics_get_200_response"
+          description: Channel analytics retrieved
+      summary: Get channel analytics
+      tags:
+      - Channels
+  /channels/me/settings:
+    get:
+      description: Retrieve channel-specific settings
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/_channels_me_settings_get_200_response"
+          description: Settings retrieved successfully
+      summary: Get channel settings
+      tags:
+      - Channels
+    put:
+      description: Update channel-specific settings
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ChannelSettings"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/_channels_me_settings_get_200_response"
+          description: Settings updated successfully
+      summary: Update channel settings
+      tags:
+      - Channels
+  /notifications:
+    get:
+      description: Retrieve user's notifications
+      parameters:
+      - explode: true
+        in: query
+        name: page
+        required: false
+        schema:
+          default: 1
+          minimum: 1
+          type: integer
+        style: form
+      - explode: true
+        in: query
+        name: limit
+        required: false
+        schema:
+          default: 20
+          maximum: 50
+          minimum: 1
+          type: integer
+        style: form
+      - explode: true
+        in: query
+        name: status
+        required: false
+        schema:
+          default: all
+          enum:
+          - unread
+          - read
+          - all
+          type: string
+        style: form
+      - explode: true
+        in: query
+        name: type
+        required: false
+        schema:
+          enum:
+          - prediction_complete
+          - accuracy_milestone
+          - weekly_summary
+          - system
+          type: string
+        style: form
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/_notifications_get_200_response"
+          description: Notifications retrieved successfully
+      summary: Get notifications
+      tags:
+      - Notifications
+  /notifications/{id}/mark-read:
+    patch:
+      description: Mark a specific notification as read
+      parameters:
+      - example: notif_abc123
+        explode: false
+        in: path
+        name: id
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/_predictions_drafts__id__delete_200_response"
+          description: Notification marked as read
+      summary: Mark notification as read
+      tags:
+      - Notifications
+  /notifications/mark-all-read:
+    patch:
+      description: Mark all user's notifications as read
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/_notifications_mark_all_read_patch_200_response"
+          description: All notifications marked as read
+      summary: Mark all notifications as read
+      tags:
+      - Notifications
+  /notifications/{id}:
+    delete:
+      description: Delete a specific notification
+      parameters:
+      - example: notif_abc123
+        explode: false
+        in: path
+        name: id
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/_predictions_drafts__id__delete_200_response"
+          description: Notification deleted successfully
+      summary: Delete notification
+      tags:
+      - Notifications
+  /history/recent:
+    get:
+      description: Retrieve most recent predictions for quick access
+      parameters:
+      - explode: true
+        in: query
+        name: limit
+        required: false
+        schema:
+          default: 10
+          maximum: 20
+          minimum: 1
+          type: integer
+        style: form
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/_history_recent_get_200_response"
+          description: Recent predictions retrieved
+      summary: Get recent predictions
+      tags:
+      - History
+  /history/best-predictions:
+    get:
+      description: Retrieve predictions with highest accuracy
+      parameters:
+      - explode: true
+        in: query
+        name: limit
+        required: false
+        schema:
+          default: 10
+          maximum: 20
+          minimum: 1
+          type: integer
+        style: form
+      - explode: true
+        in: query
+        name: period
+        required: false
+        schema:
+          default: all
+          enum:
+          - 7d
+          - 30d
+          - 3m
+          - 1y
+          - all
+          type: string
+        style: form
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/_history_recent_get_200_response"
+          description: Best predictions retrieved
+      summary: Get best predictions
+      tags:
+      - History
+  /categories:
+    get:
+      description: Retrieve list of available video categories
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/_categories_get_200_response"
+          description: Categories retrieved successfully
+      security: []
+      summary: Get video categories
+      tags:
+      - Predictions
+  /languages:
+    get:
+      description: Retrieve list of supported video languages
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/_languages_get_200_response"
+          description: Languages retrieved successfully
+      security: []
+      summary: Get supported languages
+      tags:
+      - Predictions
+  /health:
+    get:
+      description: Check API health status
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/_health_get_200_response"
+          description: API is healthy
+      security: []
+      summary: Health check
+      tags:
+      - Miscellaneous
+components:
+  examples:
+    SuccessfulLogin:
+      value:
+        success: true
+        data:
+          user:
+            id: user_abc123
+            email: user@example.com
+            fullName: John Doe
+            avatar: https://cdn.viewpredict.ai/avatars/user123.jpg
+            timezone: America/New_York
+            createdAt: 2025-01-15T10:30:00Z
+            emailVerified: true
+            credits: 50
+            plan: free
+            hasConnectedChannel: true
+          tokens:
+            accessToken: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+            refreshToken: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+            expiresIn: 3600
+            tokenType: Bearer
+    PredictionRequestExample:
+      value:
+        videoTitle: Complete React Tutorial for Beginners 2025
+        videoDescription: Learn React from scratch with this comprehensive tutorial
+          covering all the basics and advanced concepts
+        videoDuration: 2400
+        category: Education
+        tags:
+        - react
+        - javascript
+        - tutorial
+        - web development
+        - beginners
+        channelInfo:
+          subscriberCount: 50000
+          averageViewsPerVideo: 10000
+          channelAgeMonths: 24
+          uploadFrequency: weekly
+        publishDateTime: 2025-10-10T14:00:00Z
+        thumbnailQuality: 8
+        hasCustomThumbnail: true
+        language: en
+        contentType: tutorial
+        targetAudience: adults
+        isSeasonal: false
+        isTrending: true
+    PredictionResponseExample:
+      value:
+        predictionId: pred_abc123
+        predictedViews: 125000
+        confidenceInterval:
+          lower: 90000
+          upper: 160000
+        confidenceScore: 85.5
+        factorContributions:
+          channelStrength: 28.5
+          contentQuality: 35.2
+          timingOptimization: 18.3
+          topicRelevance: 18.0
+        recommendations:
+        - type: title
+          priority: high
+          message: Consider adding numbers or specific outcomes to your title
+          impact: Could increase views by 15-20%
+        - type: timing
+          priority: medium
+          message: Publishing on Thursday at 2 PM performs 18% better for your audience
+          impact: Could increase views by 10-15%
+        - type: tags
+          priority: medium
+          message: Add trending tags related to React 19 and modern JavaScript
+          impact: Could increase views by 5-10%
+        bestPublishTime: 2025-10-10T14:00:00Z
+        suggestedTags:
+        - react 2025
+        - react hooks
+        - javascript tutorial
+        - web development 2025
+        createdAt: 2025-10-03T12:00:00Z
+    DashboardAnalyticsExample:
+      value:
+        overview:
+          totalPredictions: 127
+          predictionsThisMonth: 23
+          monthlyChange: 15.5
+          averageAccuracy: 78.5
+          creditsRemaining: 50
+        recentPredictions:
+        - id: pred_abc123
+          videoTitle: How to Build a React App in 2025
+          category: Education
+          predictedViews: 125000
+          actualViews: 118000
+          accuracy: 94.4
+          status: completed
+          createdAt: 2025-10-03T12:00:00Z
+        - id: pred_def456
+          videoTitle: JavaScript Tips and Tricks
+          category: Education
+          predictedViews: 85000
+          actualViews: null
+          accuracy: null
+          status: pending
+          createdAt: 2025-10-02T15:30:00Z
+        topCategories:
+        - category: Gaming
+          count: 45
+          percentage: 35.4
+        - category: Education
+          count: 38
+          percentage: 29.9
+        - category: Entertainment
+          count: 28
+          percentage: 22.0
+        accuracyTrend:
+        - date: 2025-09-28
+          accuracy: 75.2
+        - date: 2025-09-29
+          accuracy: 76.8
+        - date: 2025-09-30
+          accuracy: 78.1
+        - date: 2025-10-01
+          accuracy: 77.5
+        - date: 2025-10-02
+          accuracy: 79.3
+    ConnectedChannelExample:
+      value:
+        channelId: UCabc123xyz
+        channelName: Tech Tutorials Hub
+        channelUrl: https://youtube.com/@techtutorialshub
+        thumbnail: https://yt3.ggpht.com/abc123
+        subscriberCount: 250000
+        videoCount: 342
+        viewCount: 15000000
+        connectedAt: 2025-09-01T10:00:00Z
+        lastSyncAt: 2025-10-03T08:00:00Z
+        syncStatus: active
+    NotificationListExample:
+      value:
+        success: true
+        data:
+        - id: notif_abc123
+          type: prediction_complete
+          title: Prediction Completed
+          message: "Your prediction for \"How to Build a React App\" is ready with\
+            \ 125,000 predicted views"
+          data:
+            predictionId: pred_abc123
+            videoTitle: How to Build a React App
+            predictedViews: 125000
+          read: false
+          createdAt: 2025-10-03T12:00:00Z
+          readAt: null
+          actionUrl: /predictions/pred_abc123
+        - id: notif_def456
+          type: accuracy_milestone
+          title: Accuracy Milestone Reached!
+          message: Congratulations! Your prediction accuracy has reached 80%
+          data:
+            accuracy: 80.2
+            milestone: 80
+          read: true
+          createdAt: 2025-10-01T09:30:00Z
+          readAt: 2025-10-01T10:15:00Z
+          actionUrl: /analytics
+        - id: notif_ghi789
+          type: weekly_summary
+          title: Your Weekly Summary
+          message: You made 8 predictions this week with an average accuracy of 76.5%
+          data:
+            predictionsCount: 8
+            averageAccuracy: 76.5
+            topCategory: Gaming
+          read: true
+          createdAt: 2025-09-30T08:00:00Z
+          readAt: 2025-09-30T08:45:00Z
+          actionUrl: /history
+        pagination:
+          page: 1
+          limit: 20
+          totalItems: 45
+          totalPages: 3
+          hasNextPage: true
+          hasPreviousPage: false
+        unreadCount: 5
+  responses:
+    BadRequest:
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/inline_object"
+      description: Bad request - validation error
+    Unauthorized:
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/inline_object_1"
+      description: Unauthorized - invalid or missing authentication
+    Forbidden:
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/inline_object_2"
+      description: Forbidden - insufficient permissions
+    NotFound:
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/inline_object_3"
+      description: Resource not found
+    Conflict:
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/inline_object_4"
+      description: Conflict - resource already exists
+    TooManyRequests:
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/inline_object_5"
+      description: Rate limit exceeded
+    InternalServerError:
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/inline_object_6"
+      description: Internal server error
+  schemas:
+    AuthResponse:
+      example:
+        tokens:
+          expiresIn: 3600
+          accessToken: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+          tokenType: Bearer
+          refreshToken: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+        user:
+          createdAt: 2025-01-15T10:30:00Z
+          emailVerified: true
+          lastLoginAt: 2025-10-03T08:15:00Z
+          credits: 50
+          timezone: America/New_York
+          fullName: John Doe
+          bio: Content creator and YouTuber
+          hasConnectedChannel: true
+          id: user_abc123
+          avatar: https://cdn.viewpredict.ai/avatars/user123.jpg
+          plan: free
+          email: user@example.com
+      properties:
+        user:
+          $ref: "#/components/schemas/User"
+        tokens:
+          $ref: "#/components/schemas/AuthResponse_tokens"
+      title: AuthResponse
+      type: object
+    User:
+      example:
+        createdAt: 2025-01-15T10:30:00Z
+        emailVerified: true
+        lastLoginAt: 2025-10-03T08:15:00Z
+        credits: 50
+        timezone: America/New_York
+        fullName: John Doe
+        bio: Content creator and YouTuber
+        hasConnectedChannel: true
+        id: user_abc123
+        avatar: https://cdn.viewpredict.ai/avatars/user123.jpg
+        plan: free
+        email: user@example.com
+      properties:
+        id:
+          example: user_abc123
+          title: id
+          type: string
+        email:
+          example: user@example.com
+          format: email
+          title: email
+          type: string
+        fullName:
+          example: John Doe
+          title: fullName
+          type: string
+        avatar:
+          example: https://cdn.viewpredict.ai/avatars/user123.jpg
+          format: uri
+          nullable: true
+          title: avatar
+          type: string
+        bio:
+          example: Content creator and YouTuber
+          nullable: true
+          title: bio
+          type: string
+        timezone:
+          example: America/New_York
+          title: timezone
+          type: string
+        createdAt:
+          example: 2025-01-15T10:30:00Z
+          format: date-time
+          title: createdAt
+          type: string
+        lastLoginAt:
+          example: 2025-10-03T08:15:00Z
+          format: date-time
+          title: lastLoginAt
+          type: string
+        emailVerified:
+          example: true
+          title: emailVerified
+          type: boolean
+        credits:
+          description: Remaining prediction credits
+          example: 50
+          title: credits
+          type: integer
+        plan:
+          enum:
+          - free
+          - basic
+          - pro
+          - enterprise
+          example: free
+          title: plan
+          type: string
+        hasConnectedChannel:
+          example: true
+          title: hasConnectedChannel
+          type: boolean
+      title: User
+      type: object
+    UserStats:
+      example:
+        totalPredictions: 127
+        totalPredictionsThisMonth: 23
+        bestPredictionAccuracy: 95.8
+        platformAverageAccuracy: 72.3
+        monthlyChange: 15.5
+        averageAccuracy: 78.5
+        joinedDaysAgo: 264
+        creditsRemaining: 50
+        creditsUsedThisMonth: 23
+      properties:
+        totalPredictions:
+          example: 127
+          title: totalPredictions
+          type: integer
+        totalPredictionsThisMonth:
+          example: 23
+          title: totalPredictionsThisMonth
+          type: integer
+        monthlyChange:
+          description: Percentage change from last month
+          example: 15.5
+          format: float
+          title: monthlyChange
+          type: number
+        averageAccuracy:
+          description: Average prediction accuracy percentage
+          example: 78.5
+          format: float
+          title: averageAccuracy
+          type: number
+        platformAverageAccuracy:
+          description: Platform-wide average for comparison
+          example: 72.3
+          format: float
+          title: platformAverageAccuracy
+          type: number
+        bestPredictionAccuracy:
+          example: 95.8
+          format: float
+          title: bestPredictionAccuracy
+          type: number
+        creditsRemaining:
+          example: 50
+          title: creditsRemaining
+          type: integer
+        creditsUsedThisMonth:
+          example: 23
+          title: creditsUsedThisMonth
+          type: integer
+        joinedDaysAgo:
+          example: 264
+          title: joinedDaysAgo
+          type: integer
+      title: UserStats
+      type: object
+    NotificationSettings:
+      example:
+        inApp:
+          predictionComplete: true
+          accuracyMilestones: true
+          systemAnnouncements: true
+        email:
+          predictionComplete: true
+          accuracyMilestones: true
+          marketing: false
+          weeklySummary: true
+          productUpdates: false
+      properties:
+        email:
+          $ref: "#/components/schemas/NotificationSettings_email"
+        inApp:
+          $ref: "#/components/schemas/NotificationSettings_inApp"
+      title: NotificationSettings
+      type: object
+    PredictionRequest:
+      example:
+        channelInfo:
+          uploadFrequency: weekly
+          subscriberCount: 50000
+          averageViewsPerVideo: 10000
+          channelAgeMonths: 24
+        thumbnailQuality: 8
+        publishDateTime: 2025-10-10T14:00:00Z
+        language: en
+        videoTitle: How to Build a React App in 2025
+        tags:
+        - react
+        - javascript
+        - tutorial
+        - web development
+        videoDuration: 720
+        isTrending: false
+        videoDescription: Complete tutorial on building modern React applications
+        targetAudience: adults
+        promotionalBudget: 100.0
+        hasCustomThumbnail: true
+        isSeasonal: false
+        category: Education
+        contentType: tutorial
+      properties:
+        videoTitle:
+          example: How to Build a React App in 2025
+          maxLength: 100
+          minLength: 1
+          title: videoTitle
+          type: string
+        videoDescription:
+          example: Complete tutorial on building modern React applications
+          maxLength: 5000
+          nullable: true
+          title: videoDescription
+          type: string
+        videoDuration:
+          description: Video duration in seconds
+          example: 720
+          minimum: 1
+          title: videoDuration
+          type: integer
+        category:
+          example: Education
+          title: category
+          type: string
+        tags:
+          example:
+          - react
+          - javascript
+          - tutorial
+          - web development
+          items:
+            type: string
+          maxItems: 15
+          title: tags
+          type: array
+        channelInfo:
+          $ref: "#/components/schemas/PredictionRequest_channelInfo"
+        publishDateTime:
+          description: Expected publish date and time
+          example: 2025-10-10T14:00:00Z
+          format: date-time
+          title: publishDateTime
+          type: string
+        thumbnailQuality:
+          description: Thumbnail quality score
+          example: 8
+          maximum: 10
+          minimum: 1
+          title: thumbnailQuality
+          type: integer
+        hasCustomThumbnail:
+          example: true
+          title: hasCustomThumbnail
+          type: boolean
+        language:
+          example: en
+          title: language
+          type: string
+        contentType:
+          enum:
+          - original
+          - commentary
+          - tutorial
+          - review
+          - vlog
+          - entertainment
+          - other
+          example: tutorial
+          title: contentType
+          type: string
+        targetAudience:
+          enum:
+          - kids
+          - teens
+          - adults
+          - all
+          example: adults
+          title: targetAudience
+          type: string
+        isSeasonal:
+          example: false
+          title: isSeasonal
+          type: boolean
+        isTrending:
+          example: false
+          title: isTrending
+          type: boolean
+        promotionalBudget:
+          description: Promotional budget in USD
+          example: 100.0
+          format: float
+          minimum: 0
+          nullable: true
+          title: promotionalBudget
+          type: number
+      required:
+      - category
+      - videoDuration
+      - videoTitle
+      title: PredictionRequest
+      type: object
+    PredictionResponse:
+      example:
+        createdAt: 2025-10-03T12:00:00Z
+        confidenceInterval:
+          lower: 90000
+          upper: 160000
+        confidenceScore: 85.5
+        predictedViews: 125000
+        suggestedTags:
+        - react tutorial
+        - react 2025
+        - web development
+        bestPublishTime: 2025-10-10T14:00:00Z
+        predictionId: pred_abc123
+        factorContributions:
+          contentQuality: 35.2
+          topicRelevance: 18.0
+          channelStrength: 28.5
+          timingOptimization: 18.3
+        recommendations:
+        - impact: Could increase views by 15-20%
+          type: title
+          priority: high
+          message: Consider adding numbers or questions to your title
+        - impact: Could increase views by 15-20%
+          type: title
+          priority: high
+          message: Consider adding numbers or questions to your title
+      properties:
+        predictionId:
+          example: pred_abc123
+          title: predictionId
+          type: string
+        predictedViews:
+          example: 125000
+          title: predictedViews
+          type: integer
+        confidenceInterval:
+          $ref: "#/components/schemas/PredictionResponse_confidenceInterval"
+        confidenceScore:
+          description: Model confidence percentage
+          example: 85.5
+          format: float
+          maximum: 100
+          minimum: 0
+          title: confidenceScore
+          type: number
+        factorContributions:
+          $ref: "#/components/schemas/PredictionResponse_factorContributions"
+        recommendations:
+          items:
+            $ref: "#/components/schemas/PredictionResponse_recommendations_inner"
+          title: recommendations
+          type: array
+        bestPublishTime:
+          example: 2025-10-10T14:00:00Z
+          format: date-time
+          title: bestPublishTime
+          type: string
+        suggestedTags:
+          example:
+          - react tutorial
+          - react 2025
+          - web development
+          items:
+            type: string
+          title: suggestedTags
+          type: array
+        createdAt:
+          example: 2025-10-03T12:00:00Z
+          format: date-time
+          title: createdAt
+          type: string
+      title: PredictionResponse
+      type: object
+    PredictionSummary:
+      example:
+        createdAt: 2025-10-03T12:00:00Z
+        predictedViews: 125000
+        publishedAt: 2025-10-10T14:00:00Z
+        accuracy: 94.4
+        id: pred_abc123
+        videoTitle: How to Build a React App in 2025
+        category: Education
+        actualViews: 118000
+        status: completed
+      properties:
+        id:
+          example: pred_abc123
+          title: id
+          type: string
+        videoTitle:
+          example: How to Build a React App in 2025
+          title: videoTitle
+          type: string
+        category:
+          example: Education
+          title: category
+          type: string
+        predictedViews:
+          example: 125000
+          title: predictedViews
+          type: integer
+        actualViews:
+          example: 118000
+          nullable: true
+          title: actualViews
+          type: integer
+        accuracy:
+          description: Accuracy percentage (only if actualViews is available)
+          example: 94.4
+          format: float
+          nullable: true
+          title: accuracy
+          type: number
+        status:
+          enum:
+          - pending
+          - tracking
+          - completed
+          example: completed
+          title: status
+          type: string
+        createdAt:
+          example: 2025-10-03T12:00:00Z
+          format: date-time
+          title: createdAt
+          type: string
+        publishedAt:
+          example: 2025-10-10T14:00:00Z
+          format: date-time
+          nullable: true
+          title: publishedAt
+          type: string
+      title: PredictionSummary
+      type: object
+    PredictionDetail:
+      allOf:
+      - $ref: "#/components/schemas/PredictionSummary"
+      - properties:
+          videoDescription:
+            example: Complete tutorial on building modern React applications
+            nullable: true
+            type: string
+          videoDuration:
+            example: 720
+            type: integer
+          tags:
+            example:
+            - react
+            - javascript
+            - tutorial
+            items:
+              type: string
+            type: array
+          channelInfo:
+            $ref: "#/components/schemas/PredictionDetail_allOf_channelInfo"
+          confidenceInterval:
+            $ref: "#/components/schemas/PredictionResponse_confidenceInterval"
+          confidenceScore:
+            example: 85.5
+            format: float
+            type: number
+          factorContributions:
+            $ref: "#/components/schemas/PredictionDetail_allOf_factorContributions"
+          recommendations:
+            items:
+              $ref: "#/components/schemas/PredictionDetail_allOf_recommendations"
+            type: array
+          viewsTimeline:
+            description: Daily view count if tracking is enabled
+            items:
+              $ref: "#/components/schemas/PredictionDetail_allOf_viewsTimeline"
+            nullable: true
+            type: array
+          notes:
+            example: Video performed better than expected
+            maxLength: 1000
+            nullable: true
+            type: string
+          updatedAt:
+            example: 2025-10-20T10:00:00Z
+            format: date-time
+            type: string
+        type: object
+      example:
+        confidenceInterval:
+          lower: 90000
+          upper: 160000
+        channelInfo:
+          subscriberCount: 50000
+          averageViewsPerVideo: 10000
+          channelAgeMonths: 24
+        notes: Video performed better than expected
+        predictedViews: 125000
+        publishedAt: 2025-10-10T14:00:00Z
+        accuracy: 94.4
+        videoTitle: How to Build a React App in 2025
+        recommendations:
+        - type: title
+          priority: high
+          message: Consider adding numbers to your title
+        - type: title
+          priority: high
+          message: Consider adding numbers to your title
+        actualViews: 118000
+        tags:
+        - react
+        - javascript
+        - tutorial
+        createdAt: 2025-10-03T12:00:00Z
+        confidenceScore: 85.5
+        videoDuration: 720
+        videoDescription: Complete tutorial on building modern React applications
+        id: pred_abc123
+        category: Education
+        factorContributions:
+          contentQuality: 35.2
+          topicRelevance: 18.0
+          channelStrength: 28.5
+          timingOptimization: 18.3
+        viewsTimeline:
+        - date: 2025-10-11
+          views: 5000
+        - date: 2025-10-11
+          views: 5000
+        status: completed
+        updatedAt: 2025-10-20T10:00:00Z
+      title: PredictionDetail
+    PredictionDraft:
+      example:
+        createdAt: 2025-10-03T12:00:00Z
+        data:
+          channelInfo:
+            uploadFrequency: weekly
+            subscriberCount: 50000
+            averageViewsPerVideo: 10000
+            channelAgeMonths: 24
+          thumbnailQuality: 8
+          publishDateTime: 2025-10-10T14:00:00Z
+          language: en
+          videoTitle: How to Build a React App in 2025
+          tags:
+          - react
+          - javascript
+          - tutorial
+          - web development
+          videoDuration: 720
+          isTrending: false
+          videoDescription: Complete tutorial on building modern React applications
+          targetAudience: adults
+          promotionalBudget: 100.0
+          hasCustomThumbnail: true
+          isSeasonal: false
+          category: Education
+          contentType: tutorial
+        id: draft_abc123
+        title: My Draft Prediction
+        updatedAt: 2025-10-03T12:30:00Z
+      properties:
+        id:
+          example: draft_abc123
+          title: id
+          type: string
+        title:
+          example: My Draft Prediction
+          title: title
+          type: string
+        data:
+          $ref: "#/components/schemas/PredictionRequest"
+        createdAt:
+          example: 2025-10-03T12:00:00Z
+          format: date-time
+          title: createdAt
+          type: string
+        updatedAt:
+          example: 2025-10-03T12:30:00Z
+          format: date-time
+          title: updatedAt
+          type: string
+      title: PredictionDraft
+      type: object
+    DashboardAnalytics:
+      example:
+        overview:
+          totalPredictions: 127
+          predictionsThisMonth: 23
+          monthlyChange: 15.5
+          averageAccuracy: 78.5
+          creditsRemaining: 50
+        recentPredictions:
+        - createdAt: 2025-10-03T12:00:00Z
+          predictedViews: 125000
+          publishedAt: 2025-10-10T14:00:00Z
+          accuracy: 94.4
+          id: pred_abc123
+          videoTitle: How to Build a React App in 2025
+          category: Education
+          actualViews: 118000
+          status: completed
+        - createdAt: 2025-10-03T12:00:00Z
+          predictedViews: 125000
+          publishedAt: 2025-10-10T14:00:00Z
+          accuracy: 94.4
+          id: pred_abc123
+          videoTitle: How to Build a React App in 2025
+          category: Education
+          actualViews: 118000
+          status: completed
+        - createdAt: 2025-10-03T12:00:00Z
+          predictedViews: 125000
+          publishedAt: 2025-10-10T14:00:00Z
+          accuracy: 94.4
+          id: pred_abc123
+          videoTitle: How to Build a React App in 2025
+          category: Education
+          actualViews: 118000
+          status: completed
+        - createdAt: 2025-10-03T12:00:00Z
+          predictedViews: 125000
+          publishedAt: 2025-10-10T14:00:00Z
+          accuracy: 94.4
+          id: pred_abc123
+          videoTitle: How to Build a React App in 2025
+          category: Education
+          actualViews: 118000
+          status: completed
+        - createdAt: 2025-10-03T12:00:00Z
+          predictedViews: 125000
+          publishedAt: 2025-10-10T14:00:00Z
+          accuracy: 94.4
+          id: pred_abc123
+          videoTitle: How to Build a React App in 2025
+          category: Education
+          actualViews: 118000
+          status: completed
+        accuracyTrend:
+        - date: 2025-10-01
+          accuracy: 76.5
+        - date: 2025-10-01
+          accuracy: 76.5
+        topCategories:
+        - percentage: 35.4
+          count: 45
+          category: Gaming
+        - percentage: 35.4
+          count: 45
+          category: Gaming
+        - percentage: 35.4
+          count: 45
+          category: Gaming
+        - percentage: 35.4
+          count: 45
+          category: Gaming
+        - percentage: 35.4
+          count: 45
+          category: Gaming
+      properties:
+        overview:
+          $ref: "#/components/schemas/DashboardAnalytics_overview"
+        recentPredictions:
+          items:
+            $ref: "#/components/schemas/PredictionSummary"
+          maxItems: 10
+          title: recentPredictions
+          type: array
+        topCategories:
+          items:
+            $ref: "#/components/schemas/DashboardAnalytics_topCategories_inner"
+          maxItems: 5
+          title: topCategories
+          type: array
+        accuracyTrend:
+          items:
+            $ref: "#/components/schemas/DashboardAnalytics_accuracyTrend_inner"
+          title: accuracyTrend
+          type: array
+      title: DashboardAnalytics
+      type: object
+    ConnectedChannel:
+      example:
+        videoCount: 342
+        thumbnail: https://yt3.ggpht.com/abc123
+        connectedAt: 2025-09-01T10:00:00Z
+        channelUrl: https://youtube.com/@techtutorialshub
+        lastSyncAt: 2025-10-03T08:00:00Z
+        subscriberCount: 250000
+        channelName: Tech Tutorials Hub
+        viewCount: 15000000
+        channelId: UCabc123xyz
+        syncStatus: active
+      properties:
+        channelId:
+          example: UCabc123xyz
+          title: channelId
+          type: string
+        channelName:
+          example: Tech Tutorials Hub
+          title: channelName
+          type: string
+        channelUrl:
+          example: https://youtube.com/@techtutorialshub
+          format: uri
+          title: channelUrl
+          type: string
+        thumbnail:
+          example: https://yt3.ggpht.com/abc123
+          format: uri
+          title: thumbnail
+          type: string
+        subscriberCount:
+          example: 250000
+          title: subscriberCount
+          type: integer
+        videoCount:
+          example: 342
+          title: videoCount
+          type: integer
+        viewCount:
+          example: 15000000
+          title: viewCount
+          type: integer
+        connectedAt:
+          example: 2025-09-01T10:00:00Z
+          format: date-time
+          title: connectedAt
+          type: string
+        lastSyncAt:
+          example: 2025-10-03T08:00:00Z
+          format: date-time
+          title: lastSyncAt
+          type: string
+        syncStatus:
+          enum:
+          - active
+          - syncing
+          - error
+          example: active
+          title: syncStatus
+          type: string
+      title: ConnectedChannel
+      type: object
+    ChannelVideo:
+      example:
+        duration: 720
+        thumbnail: https://i.ytimg.com/vi/dQw4w9WgXcQ/maxresdefault.jpg
+        publishedAt: 2025-09-15T14:00:00Z
+        hasPrediction: true
+        description: Learn something amazing in this video
+        videoId: dQw4w9WgXcQ
+        likeCount: 8500
+        viewCount: 125000
+        title: Amazing Tutorial Video
+        predictionId: pred_abc123
+        commentCount: 342
+      properties:
+        videoId:
+          example: dQw4w9WgXcQ
+          title: videoId
+          type: string
+        title:
+          example: Amazing Tutorial Video
+          title: title
+          type: string
+        description:
+          example: Learn something amazing in this video
+          title: description
+          type: string
+        thumbnail:
+          example: https://i.ytimg.com/vi/dQw4w9WgXcQ/maxresdefault.jpg
+          format: uri
+          title: thumbnail
+          type: string
+        publishedAt:
+          example: 2025-09-15T14:00:00Z
+          format: date-time
+          title: publishedAt
+          type: string
+        duration:
+          description: Duration in seconds
+          example: 720
+          title: duration
+          type: integer
+        viewCount:
+          example: 125000
+          title: viewCount
+          type: integer
+        likeCount:
+          example: 8500
+          title: likeCount
+          type: integer
+        commentCount:
+          example: 342
+          title: commentCount
+          type: integer
+        hasPrediction:
+          example: true
+          title: hasPrediction
+          type: boolean
+        predictionId:
+          example: pred_abc123
+          nullable: true
+          title: predictionId
+          type: string
+      title: ChannelVideo
+      type: object
+    ChannelAnalytics:
+      example:
+        period: 30d
+        timeline:
+        - date: 2025-10-01
+          subscribers: 85
+          estimatedMinutesWatched: 3500
+          views: 15000
+        - date: 2025-10-01
+          subscribers: 85
+          estimatedMinutesWatched: 3500
+          views: 15000
+        metrics:
+          subscribers: 2500
+          estimatedMinutesWatched: 125000
+          averageViewDuration: 180
+          views: 500000
+        topVideos:
+        - thumbnail: https://i.ytimg.com/vi/dQw4w9WgXcQ/default.jpg
+          videoId: dQw4w9WgXcQ
+          title: Top Performing Video
+          views: 50000
+        - thumbnail: https://i.ytimg.com/vi/dQw4w9WgXcQ/default.jpg
+          videoId: dQw4w9WgXcQ
+          title: Top Performing Video
+          views: 50000
+        - thumbnail: https://i.ytimg.com/vi/dQw4w9WgXcQ/default.jpg
+          videoId: dQw4w9WgXcQ
+          title: Top Performing Video
+          views: 50000
+        - thumbnail: https://i.ytimg.com/vi/dQw4w9WgXcQ/default.jpg
+          videoId: dQw4w9WgXcQ
+          title: Top Performing Video
+          views: 50000
+        - thumbnail: https://i.ytimg.com/vi/dQw4w9WgXcQ/default.jpg
+          videoId: dQw4w9WgXcQ
+          title: Top Performing Video
+          views: 50000
+        demographics:
+          gender:
+            other: 1.7
+            female: 35.8
+            male: 62.5
+          topCountries:
+          - country: United States
+            countryCode: US
+            percentage: 45.2
+          - country: United States
+            countryCode: US
+            percentage: 45.2
+          ageGroups:
+          - ageRange: 18-24
+            percentage: 35.5
+          - ageRange: 18-24
+            percentage: 35.5
+      properties:
+        period:
+          example: 30d
+          title: period
+          type: string
+        metrics:
+          $ref: "#/components/schemas/ChannelAnalytics_metrics"
+        timeline:
+          items:
+            $ref: "#/components/schemas/ChannelAnalytics_timeline_inner"
+          title: timeline
+          type: array
+        topVideos:
+          items:
+            $ref: "#/components/schemas/ChannelAnalytics_topVideos_inner"
+          maxItems: 10
+          title: topVideos
+          type: array
+        demographics:
+          $ref: "#/components/schemas/ChannelAnalytics_demographics"
+      title: ChannelAnalytics
+      type: object
+    ChannelSettings:
+      example:
+        syncFrequency: daily
+        autoCreatePrediction: false
+        autoTracking: true
+        notifyOnNewVideo: true
+      properties:
+        autoTracking:
+          description: Automatically track predictions for new videos
+          example: true
+          title: autoTracking
+          type: boolean
+        syncFrequency:
+          description: How often to sync channel data
+          enum:
+          - hourly
+          - daily
+          - weekly
+          example: daily
+          title: syncFrequency
+          type: string
+        notifyOnNewVideo:
+          description: Send notification when new video is detected
+          example: true
+          title: notifyOnNewVideo
+          type: boolean
+        autoCreatePrediction:
+          description: Automatically create predictions for new videos
+          example: false
+          title: autoCreatePrediction
+          type: boolean
+      title: ChannelSettings
+      type: object
+    Notification:
+      example:
+        createdAt: 2025-10-03T12:00:00Z
+        read: false
+        data:
+          predictionId: pred_abc123
+          videoTitle: How to Build a React App
+        actionUrl: /predictions/pred_abc123
+        id: notif_abc123
+        type: prediction_complete
+        title: Prediction Completed
+        message: Your prediction for "How to Build a React App" is ready
+        readAt: 2000-01-23T04:56:07.000+00:00
+      properties:
+        id:
+          example: notif_abc123
+          title: id
+          type: string
+        type:
+          enum:
+          - prediction_complete
+          - accuracy_milestone
+          - weekly_summary
+          - system
+          - channel_sync
+          example: prediction_complete
+          title: type
+          type: string
+        title:
+          example: Prediction Completed
+          title: title
+          type: string
+        message:
+          example: Your prediction for "How to Build a React App" is ready
+          title: message
+          type: string
+        data:
+          additionalProperties: true
+          example:
+            predictionId: pred_abc123
+            videoTitle: How to Build a React App
+          nullable: true
+          title: data
+          type: object
+        read:
+          example: false
+          title: read
+          type: boolean
+        createdAt:
+          example: 2025-10-03T12:00:00Z
+          format: date-time
+          title: createdAt
+          type: string
+        readAt:
+          format: date-time
+          nullable: true
+          title: readAt
+          type: string
+          example: null
+        actionUrl:
+          example: /predictions/pred_abc123
+          format: uri
+          nullable: true
+          title: actionUrl
+          type: string
+      title: Notification
+      type: object
+    Pagination:
+      example:
+        totalItems: 127
+        hasNextPage: true
+        limit: 20
+        totalPages: 7
+        hasPreviousPage: false
+        page: 1
+      properties:
+        page:
+          example: 1
+          title: page
+          type: integer
+        limit:
+          example: 20
+          title: limit
+          type: integer
+        totalItems:
+          example: 127
+          title: totalItems
+          type: integer
+        totalPages:
+          example: 7
+          title: totalPages
+          type: integer
+        hasNextPage:
+          example: true
+          title: hasNextPage
+          type: boolean
+        hasPreviousPage:
+          example: false
+          title: hasPreviousPage
+          type: boolean
+      title: Pagination
+      type: object
+    _auth_register_post_request:
+      properties:
+        email:
+          example: user@example.com
+          format: email
+          title: email
+          type: string
+        password:
+          example: SecurePass123!
+          format: password
+          minLength: 8
+          title: password
+          type: string
+        fullName:
+          example: John Doe
+          maxLength: 100
+          minLength: 2
+          title: fullName
+          type: string
+        channelUrl:
+          description: Optional YouTube channel URL
+          example: https://youtube.com/@johndoe
+          format: uri
+          title: channelUrl
+          type: string
+        timezone:
+          example: America/New_York
+          title: timezone
+          type: string
+        acceptTerms:
+          example: true
+          title: acceptTerms
+          type: boolean
+      required:
+      - email
+      - fullName
+      - password
+      title: _auth_register_post_request
+      type: object
+    _auth_register_post_201_response:
+      example:
+        data:
+          tokens:
+            expiresIn: 3600
+            accessToken: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+            tokenType: Bearer
+            refreshToken: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+          user:
+            createdAt: 2025-01-15T10:30:00Z
+            emailVerified: true
+            lastLoginAt: 2025-10-03T08:15:00Z
+            credits: 50
+            timezone: America/New_York
+            fullName: John Doe
+            bio: Content creator and YouTuber
+            hasConnectedChannel: true
+            id: user_abc123
+            avatar: https://cdn.viewpredict.ai/avatars/user123.jpg
+            plan: free
+            email: user@example.com
+        success: true
+        message: User registered successfully
+      properties:
+        success:
+          example: true
+          title: success
+          type: boolean
+        message:
+          example: User registered successfully
+          title: message
+          type: string
+        data:
+          $ref: "#/components/schemas/AuthResponse"
+      title: _auth_register_post_201_response
+      type: object
+    _auth_login_post_request:
+      properties:
+        email:
+          example: user@example.com
+          format: email
+          title: email
+          type: string
+        password:
+          example: SecurePass123!
+          format: password
+          title: password
+          type: string
+        rememberMe:
+          description: Extend token expiration time
+          example: true
+          title: rememberMe
+          type: boolean
+      required:
+      - email
+      - password
+      title: _auth_login_post_request
+      type: object
+    _auth_login_post_200_response:
+      example:
+        data:
+          tokens:
+            expiresIn: 3600
+            accessToken: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+            tokenType: Bearer
+            refreshToken: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+          user:
+            createdAt: 2025-01-15T10:30:00Z
+            emailVerified: true
+            lastLoginAt: 2025-10-03T08:15:00Z
+            credits: 50
+            timezone: America/New_York
+            fullName: John Doe
+            bio: Content creator and YouTuber
+            hasConnectedChannel: true
+            id: user_abc123
+            avatar: https://cdn.viewpredict.ai/avatars/user123.jpg
+            plan: free
+            email: user@example.com
+        success: true
+      properties:
+        success:
+          example: true
+          title: success
+          type: boolean
+        data:
+          $ref: "#/components/schemas/AuthResponse"
+      title: _auth_login_post_200_response
+      type: object
+    _auth_google_post_request:
+      properties:
+        idToken:
+          description: Google OAuth ID token
+          example: eyJhbGciOiJSUzI1NiIsImtpZCI6IjI3...
+          title: idToken
+          type: string
+      required:
+      - idToken
+      title: _auth_google_post_request
+      type: object
+    _auth_refresh_post_request:
+      properties:
+        refreshToken:
+          example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+          title: refreshToken
+          type: string
+      required:
+      - refreshToken
+      title: _auth_refresh_post_request
+      type: object
+    _auth_refresh_post_200_response_data:
+      example:
+        expiresIn: 3600
+        accessToken: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+      properties:
+        accessToken:
+          example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+          title: accessToken
+          type: string
+        expiresIn:
+          example: 3600
+          title: expiresIn
+          type: integer
+      title: _auth_refresh_post_200_response_data
+      type: object
+    _auth_refresh_post_200_response:
+      example:
+        data:
+          expiresIn: 3600
+          accessToken: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+        success: true
+      properties:
+        success:
+          example: true
+          title: success
+          type: boolean
+        data:
+          $ref: "#/components/schemas/_auth_refresh_post_200_response_data"
+      title: _auth_refresh_post_200_response
+      type: object
+    _auth_logout_post_200_response:
+      example:
+        success: true
+        message: Logged out successfully
+      properties:
+        success:
+          example: true
+          title: success
+          type: boolean
+        message:
+          example: Logged out successfully
+          title: message
+          type: string
+      title: _auth_logout_post_200_response
+      type: object
+    _auth_forgot_password_post_request:
+      properties:
+        email:
+          example: user@example.com
+          format: email
+          title: email
+          type: string
+      required:
+      - email
+      title: _auth_forgot_password_post_request
+      type: object
+    _auth_forgot_password_post_200_response:
+      example:
+        success: true
+        message: Password reset email sent
+      properties:
+        success:
+          example: true
+          title: success
+          type: boolean
+        message:
+          example: Password reset email sent
+          title: message
+          type: string
+      title: _auth_forgot_password_post_200_response
+      type: object
+    _auth_reset_password_post_request:
+      properties:
+        token:
+          example: abc123def456
+          title: token
+          type: string
+        newPassword:
+          example: NewSecurePass123!
+          format: password
+          minLength: 8
+          title: newPassword
+          type: string
+      required:
+      - newPassword
+      - token
+      title: _auth_reset_password_post_request
+      type: object
+    _auth_reset_password_post_200_response:
+      example:
+        success: true
+        message: Password reset successfully
+      properties:
+        success:
+          example: true
+          title: success
+          type: boolean
+        message:
+          example: Password reset successfully
+          title: message
+          type: string
+      title: _auth_reset_password_post_200_response
+      type: object
+    _users_me_get_200_response:
+      example:
+        data:
+          createdAt: 2025-01-15T10:30:00Z
+          emailVerified: true
+          lastLoginAt: 2025-10-03T08:15:00Z
+          credits: 50
+          timezone: America/New_York
+          fullName: John Doe
+          bio: Content creator and YouTuber
+          hasConnectedChannel: true
+          id: user_abc123
+          avatar: https://cdn.viewpredict.ai/avatars/user123.jpg
+          plan: free
+          email: user@example.com
+        success: true
+      properties:
+        success:
+          example: true
+          title: success
+          type: boolean
+        data:
+          $ref: "#/components/schemas/User"
+      title: _users_me_get_200_response
+      type: object
+    _users_me_patch_request:
+      properties:
+        fullName:
+          example: John Smith
+          title: fullName
+          type: string
+        bio:
+          example: Content creator and YouTuber
+          maxLength: 500
+          title: bio
+          type: string
+        timezone:
+          example: America/Los_Angeles
+          title: timezone
+          type: string
+        avatar:
+          example: https://cdn.viewpredict.ai/avatars/user123.jpg
+          format: uri
+          title: avatar
+          type: string
+      title: _users_me_patch_request
+      type: object
+    _users_me_password_put_request:
+      properties:
+        currentPassword:
+          example: OldPass123!
+          format: password
+          title: currentPassword
+          type: string
+        newPassword:
+          example: NewPass123!
+          format: password
+          minLength: 8
+          title: newPassword
+          type: string
+      required:
+      - currentPassword
+      - newPassword
+      title: _users_me_password_put_request
+      type: object
+    _users_me_password_put_200_response:
+      example:
+        success: true
+        message: Password changed successfully
+      properties:
+        success:
+          example: true
+          title: success
+          type: boolean
+        message:
+          example: Password changed successfully
+          title: message
+          type: string
+      title: _users_me_password_put_200_response
+      type: object
+    _users_me_stats_get_200_response:
+      example:
+        data:
+          totalPredictions: 127
+          totalPredictionsThisMonth: 23
+          bestPredictionAccuracy: 95.8
+          platformAverageAccuracy: 72.3
+          monthlyChange: 15.5
+          averageAccuracy: 78.5
+          joinedDaysAgo: 264
+          creditsRemaining: 50
+          creditsUsedThisMonth: 23
+        success: true
+      properties:
+        success:
+          example: true
+          title: success
+          type: boolean
+        data:
+          $ref: "#/components/schemas/UserStats"
+      title: _users_me_stats_get_200_response
+      type: object
+    _users_me_notifications_settings_get_200_response:
+      example:
+        data:
+          inApp:
+            predictionComplete: true
+            accuracyMilestones: true
+            systemAnnouncements: true
+          email:
+            predictionComplete: true
+            accuracyMilestones: true
+            marketing: false
+            weeklySummary: true
+            productUpdates: false
+        success: true
+      properties:
+        success:
+          example: true
+          title: success
+          type: boolean
+        data:
+          $ref: "#/components/schemas/NotificationSettings"
+      title: _users_me_notifications_settings_get_200_response
+      type: object
+    _predictions_get_200_response:
+      example:
+        pagination:
+          totalItems: 127
+          hasNextPage: true
+          limit: 20
+          totalPages: 7
+          hasPreviousPage: false
+          page: 1
+        data:
+        - createdAt: 2025-10-03T12:00:00Z
+          predictedViews: 125000
+          publishedAt: 2025-10-10T14:00:00Z
+          accuracy: 94.4
+          id: pred_abc123
+          videoTitle: How to Build a React App in 2025
+          category: Education
+          actualViews: 118000
+          status: completed
+        - createdAt: 2025-10-03T12:00:00Z
+          predictedViews: 125000
+          publishedAt: 2025-10-10T14:00:00Z
+          accuracy: 94.4
+          id: pred_abc123
+          videoTitle: How to Build a React App in 2025
+          category: Education
+          actualViews: 118000
+          status: completed
+        success: true
+      properties:
+        success:
+          example: true
+          title: success
+          type: boolean
+        data:
+          items:
+            $ref: "#/components/schemas/PredictionSummary"
+          title: data
+          type: array
+        pagination:
+          $ref: "#/components/schemas/Pagination"
+      title: _predictions_get_200_response
+      type: object
+    _predictions_post_201_response:
+      example:
+        data:
+          createdAt: 2025-10-03T12:00:00Z
+          confidenceInterval:
+            lower: 90000
+            upper: 160000
+          confidenceScore: 85.5
+          predictedViews: 125000
+          suggestedTags:
+          - react tutorial
+          - react 2025
+          - web development
+          bestPublishTime: 2025-10-10T14:00:00Z
+          predictionId: pred_abc123
+          factorContributions:
+            contentQuality: 35.2
+            topicRelevance: 18.0
+            channelStrength: 28.5
+            timingOptimization: 18.3
+          recommendations:
+          - impact: Could increase views by 15-20%
+            type: title
+            priority: high
+            message: Consider adding numbers or questions to your title
+          - impact: Could increase views by 15-20%
+            type: title
+            priority: high
+            message: Consider adding numbers or questions to your title
+        success: true
+      properties:
+        success:
+          example: true
+          title: success
+          type: boolean
+        data:
+          $ref: "#/components/schemas/PredictionResponse"
+      title: _predictions_post_201_response
+      type: object
+    _predictions_post_402_response_error:
+      example:
+        code: INSUFFICIENT_CREDITS
+        creditsAvailable: 0
+        creditsRequired: 1
+        message: You have insufficient credits to make a prediction
+      properties:
+        code:
+          example: INSUFFICIENT_CREDITS
+          title: code
+          type: string
+        message:
+          example: You have insufficient credits to make a prediction
+          title: message
+          type: string
+        creditsRequired:
+          example: 1
+          title: creditsRequired
+          type: integer
+        creditsAvailable:
+          example: 0
+          title: creditsAvailable
+          type: integer
+      title: _predictions_post_402_response_error
+      type: object
+    _predictions_post_402_response:
+      example:
+        success: false
+        error:
+          code: INSUFFICIENT_CREDITS
+          creditsAvailable: 0
+          creditsRequired: 1
+          message: You have insufficient credits to make a prediction
+      properties:
+        success:
+          example: false
+          title: success
+          type: boolean
+        error:
+          $ref: "#/components/schemas/_predictions_post_402_response_error"
+      title: _predictions_post_402_response
+      type: object
+    _predictions__id__get_200_response:
+      example:
+        data:
+          confidenceInterval:
+            lower: 90000
+            upper: 160000
+          channelInfo:
+            subscriberCount: 50000
+            averageViewsPerVideo: 10000
+            channelAgeMonths: 24
+          notes: Video performed better than expected
+          predictedViews: 125000
+          publishedAt: 2025-10-10T14:00:00Z
+          accuracy: 94.4
+          videoTitle: How to Build a React App in 2025
+          recommendations:
+          - type: title
+            priority: high
+            message: Consider adding numbers to your title
+          - type: title
+            priority: high
+            message: Consider adding numbers to your title
+          actualViews: 118000
+          tags:
+          - react
+          - javascript
+          - tutorial
+          createdAt: 2025-10-03T12:00:00Z
+          confidenceScore: 85.5
+          videoDuration: 720
+          videoDescription: Complete tutorial on building modern React applications
+          id: pred_abc123
+          category: Education
+          factorContributions:
+            contentQuality: 35.2
+            topicRelevance: 18.0
+            channelStrength: 28.5
+            timingOptimization: 18.3
+          viewsTimeline:
+          - date: 2025-10-11
+            views: 5000
+          - date: 2025-10-11
+            views: 5000
+          status: completed
+          updatedAt: 2025-10-20T10:00:00Z
+        success: true
+      properties:
+        success:
+          example: true
+          title: success
+          type: boolean
+        data:
+          $ref: "#/components/schemas/PredictionDetail"
+      title: _predictions__id__get_200_response
+      type: object
+    _predictions__id__delete_200_response:
+      example:
+        success: true
+        message: Prediction deleted successfully
+      properties:
+        success:
+          example: true
+          title: success
+          type: boolean
+        message:
+          example: Prediction deleted successfully
+          title: message
+          type: string
+      title: _predictions__id__delete_200_response
+      type: object
+    _predictions__id__patch_request:
+      properties:
+        actualViews:
+          description: Actual view count after video is published
+          example: 125000
+          title: actualViews
+          type: integer
+        notes:
+          example: Video performed better than expected
+          maxLength: 1000
+          title: notes
+          type: string
+      title: _predictions__id__patch_request
+      type: object
+    _predictions__id__repredict_post_request:
+      properties:
+        updateFields:
+          additionalProperties: true
+          description: Optional fields to update before repredicting
+          title: updateFields
+          type: object
+      title: _predictions__id__repredict_post_request
+      type: object
+    _predictions_bulk_delete_delete_request:
+      properties:
+        predictionIds:
+          example:
+          - pred_abc123
+          - pred_def456
+          - pred_ghi789
+          items:
+            type: string
+          title: predictionIds
+          type: array
+      required:
+      - predictionIds
+      title: _predictions_bulk_delete_delete_request
+      type: object
+    _predictions_bulk_delete_delete_200_response:
+      example:
+        success: true
+        deletedCount: 3
+        message: 3 predictions deleted successfully
+      properties:
+        success:
+          example: true
+          title: success
+          type: boolean
+        message:
+          example: 3 predictions deleted successfully
+          title: message
+          type: string
+        deletedCount:
+          example: 3
+          title: deletedCount
+          type: integer
+      title: _predictions_bulk_delete_delete_200_response
+      type: object
+    _predictions_drafts_get_200_response:
+      example:
+        data:
+        - createdAt: 2025-10-03T12:00:00Z
+          data:
+            channelInfo:
+              uploadFrequency: weekly
+              subscriberCount: 50000
+              averageViewsPerVideo: 10000
+              channelAgeMonths: 24
+            thumbnailQuality: 8
+            publishDateTime: 2025-10-10T14:00:00Z
+            language: en
+            videoTitle: How to Build a React App in 2025
+            tags:
+            - react
+            - javascript
+            - tutorial
+            - web development
+            videoDuration: 720
+            isTrending: false
+            videoDescription: Complete tutorial on building modern React applications
+            targetAudience: adults
+            promotionalBudget: 100.0
+            hasCustomThumbnail: true
+            isSeasonal: false
+            category: Education
+            contentType: tutorial
+          id: draft_abc123
+          title: My Draft Prediction
+          updatedAt: 2025-10-03T12:30:00Z
+        - createdAt: 2025-10-03T12:00:00Z
+          data:
+            channelInfo:
+              uploadFrequency: weekly
+              subscriberCount: 50000
+              averageViewsPerVideo: 10000
+              channelAgeMonths: 24
+            thumbnailQuality: 8
+            publishDateTime: 2025-10-10T14:00:00Z
+            language: en
+            videoTitle: How to Build a React App in 2025
+            tags:
+            - react
+            - javascript
+            - tutorial
+            - web development
+            videoDuration: 720
+            isTrending: false
+            videoDescription: Complete tutorial on building modern React applications
+            targetAudience: adults
+            promotionalBudget: 100.0
+            hasCustomThumbnail: true
+            isSeasonal: false
+            category: Education
+            contentType: tutorial
+          id: draft_abc123
+          title: My Draft Prediction
+          updatedAt: 2025-10-03T12:30:00Z
+        success: true
+      properties:
+        success:
+          example: true
+          title: success
+          type: boolean
+        data:
+          items:
+            $ref: "#/components/schemas/PredictionDraft"
+          title: data
+          type: array
+      title: _predictions_drafts_get_200_response
+      type: object
+    _predictions_drafts_post_request:
+      properties:
+        title:
+          example: My Draft Prediction
+          title: title
+          type: string
+        data:
+          $ref: "#/components/schemas/PredictionRequest"
+      title: _predictions_drafts_post_request
+      type: object
+    _predictions_drafts_post_201_response:
+      example:
+        data:
+          createdAt: 2025-10-03T12:00:00Z
+          data:
+            channelInfo:
+              uploadFrequency: weekly
+              subscriberCount: 50000
+              averageViewsPerVideo: 10000
+              channelAgeMonths: 24
+            thumbnailQuality: 8
+            publishDateTime: 2025-10-10T14:00:00Z
+            language: en
+            videoTitle: How to Build a React App in 2025
+            tags:
+            - react
+            - javascript
+            - tutorial
+            - web development
+            videoDuration: 720
+            isTrending: false
+            videoDescription: Complete tutorial on building modern React applications
+            targetAudience: adults
+            promotionalBudget: 100.0
+            hasCustomThumbnail: true
+            isSeasonal: false
+            category: Education
+            contentType: tutorial
+          id: draft_abc123
+          title: My Draft Prediction
+          updatedAt: 2025-10-03T12:30:00Z
+        success: true
+      properties:
+        success:
+          example: true
+          title: success
+          type: boolean
+        data:
+          $ref: "#/components/schemas/PredictionDraft"
+      title: _predictions_drafts_post_201_response
+      type: object
+    _predictions_drafts__id__delete_200_response:
+      example:
+        success: true
+      properties:
+        success:
+          example: true
+          title: success
+          type: boolean
+      title: _predictions_drafts__id__delete_200_response
+      type: object
+    _analytics_dashboard_get_200_response:
+      example:
+        data:
+          overview:
+            totalPredictions: 127
+            predictionsThisMonth: 23
+            monthlyChange: 15.5
+            averageAccuracy: 78.5
+            creditsRemaining: 50
+          recentPredictions:
+          - createdAt: 2025-10-03T12:00:00Z
+            predictedViews: 125000
+            publishedAt: 2025-10-10T14:00:00Z
+            accuracy: 94.4
+            id: pred_abc123
+            videoTitle: How to Build a React App in 2025
+            category: Education
+            actualViews: 118000
+            status: completed
+          - createdAt: 2025-10-03T12:00:00Z
+            predictedViews: 125000
+            publishedAt: 2025-10-10T14:00:00Z
+            accuracy: 94.4
+            id: pred_abc123
+            videoTitle: How to Build a React App in 2025
+            category: Education
+            actualViews: 118000
+            status: completed
+          - createdAt: 2025-10-03T12:00:00Z
+            predictedViews: 125000
+            publishedAt: 2025-10-10T14:00:00Z
+            accuracy: 94.4
+            id: pred_abc123
+            videoTitle: How to Build a React App in 2025
+            category: Education
+            actualViews: 118000
+            status: completed
+          - createdAt: 2025-10-03T12:00:00Z
+            predictedViews: 125000
+            publishedAt: 2025-10-10T14:00:00Z
+            accuracy: 94.4
+            id: pred_abc123
+            videoTitle: How to Build a React App in 2025
+            category: Education
+            actualViews: 118000
+            status: completed
+          - createdAt: 2025-10-03T12:00:00Z
+            predictedViews: 125000
+            publishedAt: 2025-10-10T14:00:00Z
+            accuracy: 94.4
+            id: pred_abc123
+            videoTitle: How to Build a React App in 2025
+            category: Education
+            actualViews: 118000
+            status: completed
+          accuracyTrend:
+          - date: 2025-10-01
+            accuracy: 76.5
+          - date: 2025-10-01
+            accuracy: 76.5
+          topCategories:
+          - percentage: 35.4
+            count: 45
+            category: Gaming
+          - percentage: 35.4
+            count: 45
+            category: Gaming
+          - percentage: 35.4
+            count: 45
+            category: Gaming
+          - percentage: 35.4
+            count: 45
+            category: Gaming
+          - percentage: 35.4
+            count: 45
+            category: Gaming
+        success: true
+      properties:
+        success:
+          example: true
+          title: success
+          type: boolean
+        data:
+          $ref: "#/components/schemas/DashboardAnalytics"
+      title: _analytics_dashboard_get_200_response
+      type: object
+    _analytics_accuracy_over_time_get_200_response_data_inner:
+      example:
+        date: 2025-10-01
+        predictionCount: 12
+        averageAccuracy: 78.5
+      properties:
+        date:
+          example: 2025-10-01
+          format: date
+          title: date
+          type: string
+        averageAccuracy:
+          example: 78.5
+          format: float
+          title: averageAccuracy
+          type: number
+        predictionCount:
+          example: 12
+          title: predictionCount
+          type: integer
+      title: _analytics_accuracy_over_time_get_200_response_data_inner
+      type: object
+    _analytics_accuracy_over_time_get_200_response:
+      example:
+        data:
+        - date: 2025-10-01
+          predictionCount: 12
+          averageAccuracy: 78.5
+        - date: 2025-10-01
+          predictionCount: 12
+          averageAccuracy: 78.5
+        success: true
+      properties:
+        success:
+          example: true
+          title: success
+          type: boolean
+        data:
+          items:
+            $ref: "#/components/schemas/_analytics_accuracy_over_time_get_200_response_data_inner"
+          title: data
+          type: array
+      title: _analytics_accuracy_over_time_get_200_response
+      type: object
+    _analytics_predicted_vs_actual_get_200_response_data_inner:
+      example:
+        predictedViews: 100000
+        accuracy: 80.0
+        category: Gaming
+        predictionId: pred_abc123
+        actualViews: 125000
+      properties:
+        predictionId:
+          example: pred_abc123
+          title: predictionId
+          type: string
+        predictedViews:
+          example: 100000
+          title: predictedViews
+          type: integer
+        actualViews:
+          example: 125000
+          title: actualViews
+          type: integer
+        category:
+          example: Gaming
+          title: category
+          type: string
+        accuracy:
+          example: 80.0
+          format: float
+          title: accuracy
+          type: number
+      title: _analytics_predicted_vs_actual_get_200_response_data_inner
+      type: object
+    _analytics_predicted_vs_actual_get_200_response:
+      example:
+        data:
+        - predictedViews: 100000
+          accuracy: 80.0
+          category: Gaming
+          predictionId: pred_abc123
+          actualViews: 125000
+        - predictedViews: 100000
+          accuracy: 80.0
+          category: Gaming
+          predictionId: pred_abc123
+          actualViews: 125000
+        success: true
+      properties:
+        success:
+          example: true
+          title: success
+          type: boolean
+        data:
+          items:
+            $ref: "#/components/schemas/_analytics_predicted_vs_actual_get_200_response_data_inner"
+          title: data
+          type: array
+      title: _analytics_predicted_vs_actual_get_200_response
+      type: object
+    _analytics_category_performance_get_200_response_data_inner:
+      example:
+        averagePredictedViews: 150000
+        averageActualViews: 145000
+        predictionCount: 45
+        category: Gaming
+        averageAccuracy: 82.5
+      properties:
+        category:
+          example: Gaming
+          title: category
+          type: string
+        predictionCount:
+          example: 45
+          title: predictionCount
+          type: integer
+        averageAccuracy:
+          example: 82.5
+          format: float
+          title: averageAccuracy
+          type: number
+        averagePredictedViews:
+          example: 150000
+          title: averagePredictedViews
+          type: integer
+        averageActualViews:
+          example: 145000
+          title: averageActualViews
+          type: integer
+      title: _analytics_category_performance_get_200_response_data_inner
+      type: object
+    _analytics_category_performance_get_200_response:
+      example:
+        data:
+        - averagePredictedViews: 150000
+          averageActualViews: 145000
+          predictionCount: 45
+          category: Gaming
+          averageAccuracy: 82.5
+        - averagePredictedViews: 150000
+          averageActualViews: 145000
+          predictionCount: 45
+          category: Gaming
+          averageAccuracy: 82.5
+        success: true
+      properties:
+        success:
+          example: true
+          title: success
+          type: boolean
+        data:
+          items:
+            $ref: "#/components/schemas/_analytics_category_performance_get_200_response_data_inner"
+          title: data
+          type: array
+      title: _analytics_category_performance_get_200_response
+      type: object
+    _analytics_factor_importance_get_200_response_data_inner:
+      example:
+        trend: increasing
+        importance: 35.5
+        factor: titleOptimization
+      properties:
+        factor:
+          example: titleOptimization
+          title: factor
+          type: string
+        importance:
+          example: 35.5
+          format: float
+          maximum: 100
+          minimum: 0
+          title: importance
+          type: number
+        trend:
+          enum:
+          - increasing
+          - decreasing
+          - stable
+          example: increasing
+          title: trend
+          type: string
+      title: _analytics_factor_importance_get_200_response_data_inner
+      type: object
+    _analytics_factor_importance_get_200_response:
+      example:
+        data:
+        - trend: increasing
+          importance: 35.5
+          factor: titleOptimization
+        - trend: increasing
+          importance: 35.5
+          factor: titleOptimization
+        success: true
+      properties:
+        success:
+          example: true
+          title: success
+          type: boolean
+        data:
+          items:
+            $ref: "#/components/schemas/_analytics_factor_importance_get_200_response_data_inner"
+          title: data
+          type: array
+      title: _analytics_factor_importance_get_200_response
+      type: object
+    _analytics_upload_time_heatmap_get_200_response_data_inner:
+      example:
+        dayOfWeek: 3
+        hour: 14
+        averagePredictedViews: 175000
+        predictionCount: 8
+      properties:
+        dayOfWeek:
+          description: "0 = Sunday, 6 = Saturday"
+          example: 3
+          maximum: 6
+          minimum: 0
+          title: dayOfWeek
+          type: integer
+        hour:
+          example: 14
+          maximum: 23
+          minimum: 0
+          title: hour
+          type: integer
+        averagePredictedViews:
+          example: 175000
+          title: averagePredictedViews
+          type: integer
+        predictionCount:
+          example: 8
+          title: predictionCount
+          type: integer
+      title: _analytics_upload_time_heatmap_get_200_response_data_inner
+      type: object
+    _analytics_upload_time_heatmap_get_200_response:
+      example:
+        data:
+        - dayOfWeek: 3
+          hour: 14
+          averagePredictedViews: 175000
+          predictionCount: 8
+        - dayOfWeek: 3
+          hour: 14
+          averagePredictedViews: 175000
+          predictionCount: 8
+        success: true
+      properties:
+        success:
+          example: true
+          title: success
+          type: boolean
+        data:
+          items:
+            $ref: "#/components/schemas/_analytics_upload_time_heatmap_get_200_response_data_inner"
+          title: data
+          type: array
+      title: _analytics_upload_time_heatmap_get_200_response
+      type: object
+    _analytics_insights_get_200_response_data_patterns_inner:
+      example:
+        description: 60% of your predictions are in the Gaming category
+        type: mostPredictedCategory
+        title: Gaming is your focus
+        value: Gaming
+      properties:
+        type:
+          example: mostPredictedCategory
+          title: type
+          type: string
+        title:
+          example: Gaming is your focus
+          title: title
+          type: string
+        description:
+          example: 60% of your predictions are in the Gaming category
+          title: description
+          type: string
+        value:
+          example: Gaming
+          title: value
+          type: string
+      title: _analytics_insights_get_200_response_data_patterns_inner
+      type: object
+    _analytics_insights_get_200_response_data_recommendations_inner:
+      example:
+        actionable: true
+        description: Your predictions show 23% higher views for Thursday uploads
+        priority: high
+        title: Upload on Thursdays
+      properties:
+        priority:
+          enum:
+          - high
+          - medium
+          - low
+          example: high
+          title: priority
+          type: string
+        title:
+          example: Upload on Thursdays
+          title: title
+          type: string
+        description:
+          example: Your predictions show 23% higher views for Thursday uploads
+          title: description
+          type: string
+        actionable:
+          example: true
+          title: actionable
+          type: boolean
+      title: _analytics_insights_get_200_response_data_recommendations_inner
+      type: object
+    _analytics_insights_get_200_response_data_accuracyTrend:
+      example:
+        percentageChange: 12.5
+        description: Your prediction accuracy has improved by 12.5% this month
+        direction: improving
+      properties:
+        direction:
+          enum:
+          - improving
+          - declining
+          - stable
+          example: improving
+          title: direction
+          type: string
+        percentageChange:
+          example: 12.5
+          format: float
+          title: percentageChange
+          type: number
+        description:
+          example: Your prediction accuracy has improved by 12.5% this month
+          title: description
+          type: string
+      title: _analytics_insights_get_200_response_data_accuracyTrend
+      type: object
+    _analytics_insights_get_200_response_data:
+      example:
+        patterns:
+        - description: 60% of your predictions are in the Gaming category
+          type: mostPredictedCategory
+          title: Gaming is your focus
+          value: Gaming
+        - description: 60% of your predictions are in the Gaming category
+          type: mostPredictedCategory
+          title: Gaming is your focus
+          value: Gaming
+        accuracyTrend:
+          percentageChange: 12.5
+          description: Your prediction accuracy has improved by 12.5% this month
+          direction: improving
+        recommendations:
+        - actionable: true
+          description: Your predictions show 23% higher views for Thursday uploads
+          priority: high
+          title: Upload on Thursdays
+        - actionable: true
+          description: Your predictions show 23% higher views for Thursday uploads
+          priority: high
+          title: Upload on Thursdays
+      properties:
+        patterns:
+          items:
+            $ref: "#/components/schemas/_analytics_insights_get_200_response_data_patterns_inner"
+          title: patterns
+          type: array
+        recommendations:
+          items:
+            $ref: "#/components/schemas/_analytics_insights_get_200_response_data_recommendations_inner"
+          title: recommendations
+          type: array
+        accuracyTrend:
+          $ref: "#/components/schemas/_analytics_insights_get_200_response_data_accuracyTrend"
+      title: _analytics_insights_get_200_response_data
+      type: object
+    _analytics_insights_get_200_response:
+      example:
+        data:
+          patterns:
+          - description: 60% of your predictions are in the Gaming category
+            type: mostPredictedCategory
+            title: Gaming is your focus
+            value: Gaming
+          - description: 60% of your predictions are in the Gaming category
+            type: mostPredictedCategory
+            title: Gaming is your focus
+            value: Gaming
+          accuracyTrend:
+            percentageChange: 12.5
+            description: Your prediction accuracy has improved by 12.5% this month
+            direction: improving
+          recommendations:
+          - actionable: true
+            description: Your predictions show 23% higher views for Thursday uploads
+            priority: high
+            title: Upload on Thursdays
+          - actionable: true
+            description: Your predictions show 23% higher views for Thursday uploads
+            priority: high
+            title: Upload on Thursdays
+        success: true
+      properties:
+        success:
+          example: true
+          title: success
+          type: boolean
+        data:
+          $ref: "#/components/schemas/_analytics_insights_get_200_response_data"
+      title: _analytics_insights_get_200_response
+      type: object
+    _channels_connect_post_200_response_data:
+      example:
+        authUrl: https://accounts.google.com/o/oauth2/v2/auth?client_id=...
+        state: abc123xyz
+      properties:
+        authUrl:
+          example: https://accounts.google.com/o/oauth2/v2/auth?client_id=...
+          format: uri
+          title: authUrl
+          type: string
+        state:
+          example: abc123xyz
+          title: state
+          type: string
+      title: _channels_connect_post_200_response_data
+      type: object
+    _channels_connect_post_200_response:
+      example:
+        data:
+          authUrl: https://accounts.google.com/o/oauth2/v2/auth?client_id=...
+          state: abc123xyz
+        success: true
+      properties:
+        success:
+          example: true
+          title: success
+          type: boolean
+        data:
+          $ref: "#/components/schemas/_channels_connect_post_200_response_data"
+      title: _channels_connect_post_200_response
+      type: object
+    _channels_callback_get_200_response:
+      example:
+        data:
+          videoCount: 342
+          thumbnail: https://yt3.ggpht.com/abc123
+          connectedAt: 2025-09-01T10:00:00Z
+          channelUrl: https://youtube.com/@techtutorialshub
+          lastSyncAt: 2025-10-03T08:00:00Z
+          subscriberCount: 250000
+          channelName: Tech Tutorials Hub
+          viewCount: 15000000
+          channelId: UCabc123xyz
+          syncStatus: active
+        success: true
+      properties:
+        success:
+          example: true
+          title: success
+          type: boolean
+        data:
+          $ref: "#/components/schemas/ConnectedChannel"
+      title: _channels_callback_get_200_response
+      type: object
+    _channels_me_get_404_response_error:
+      example:
+        code: NO_CHANNEL_CONNECTED
+        message: No YouTube channel is connected to this account
+      properties:
+        code:
+          example: NO_CHANNEL_CONNECTED
+          title: code
+          type: string
+        message:
+          example: No YouTube channel is connected to this account
+          title: message
+          type: string
+      title: _channels_me_get_404_response_error
+      type: object
+    _channels_me_get_404_response:
+      example:
+        success: false
+        error:
+          code: NO_CHANNEL_CONNECTED
+          message: No YouTube channel is connected to this account
+      properties:
+        success:
+          example: false
+          title: success
+          type: boolean
+        error:
+          $ref: "#/components/schemas/_channels_me_get_404_response_error"
+      title: _channels_me_get_404_response
+      type: object
+    _channels_me_delete_200_response:
+      example:
+        success: true
+        message: Channel disconnected successfully
+      properties:
+        success:
+          example: true
+          title: success
+          type: boolean
+        message:
+          example: Channel disconnected successfully
+          title: message
+          type: string
+      title: _channels_me_delete_200_response
+      type: object
+    _channels_me_sync_post_200_response_data:
+      example:
+        estimatedCompletionTime: 2025-10-03T12:35:00Z
+        syncId: sync_abc123
+        status: pending
+      properties:
+        syncId:
+          example: sync_abc123
+          title: syncId
+          type: string
+        status:
+          enum:
+          - pending
+          - in_progress
+          - completed
+          - failed
+          example: pending
+          title: status
+          type: string
+        estimatedCompletionTime:
+          example: 2025-10-03T12:35:00Z
+          format: date-time
+          title: estimatedCompletionTime
+          type: string
+      title: _channels_me_sync_post_200_response_data
+      type: object
+    _channels_me_sync_post_200_response:
+      example:
+        data:
+          estimatedCompletionTime: 2025-10-03T12:35:00Z
+          syncId: sync_abc123
+          status: pending
+        success: true
+      properties:
+        success:
+          example: true
+          title: success
+          type: boolean
+        data:
+          $ref: "#/components/schemas/_channels_me_sync_post_200_response_data"
+      title: _channels_me_sync_post_200_response
+      type: object
+    _channels_me_videos_get_200_response:
+      example:
+        pagination:
+          totalItems: 127
+          hasNextPage: true
+          limit: 20
+          totalPages: 7
+          hasPreviousPage: false
+          page: 1
+        data:
+        - duration: 720
+          thumbnail: https://i.ytimg.com/vi/dQw4w9WgXcQ/maxresdefault.jpg
+          publishedAt: 2025-09-15T14:00:00Z
+          hasPrediction: true
+          description: Learn something amazing in this video
+          videoId: dQw4w9WgXcQ
+          likeCount: 8500
+          viewCount: 125000
+          title: Amazing Tutorial Video
+          predictionId: pred_abc123
+          commentCount: 342
+        - duration: 720
+          thumbnail: https://i.ytimg.com/vi/dQw4w9WgXcQ/maxresdefault.jpg
+          publishedAt: 2025-09-15T14:00:00Z
+          hasPrediction: true
+          description: Learn something amazing in this video
+          videoId: dQw4w9WgXcQ
+          likeCount: 8500
+          viewCount: 125000
+          title: Amazing Tutorial Video
+          predictionId: pred_abc123
+          commentCount: 342
+        success: true
+      properties:
+        success:
+          example: true
+          title: success
+          type: boolean
+        data:
+          items:
+            $ref: "#/components/schemas/ChannelVideo"
+          title: data
+          type: array
+        pagination:
+          $ref: "#/components/schemas/Pagination"
+      title: _channels_me_videos_get_200_response
+      type: object
+    _channels_me_videos_get_404_response_error:
+      example:
+        code: NO_CHANNEL_CONNECTED
+        message: No YouTube channel is connected
+      properties:
+        code:
+          example: NO_CHANNEL_CONNECTED
+          title: code
+          type: string
+        message:
+          example: No YouTube channel is connected
+          title: message
+          type: string
+      title: _channels_me_videos_get_404_response_error
+      type: object
+    _channels_me_videos_get_404_response:
+      example:
+        success: false
+        error:
+          code: NO_CHANNEL_CONNECTED
+          message: No YouTube channel is connected
+      properties:
+        success:
+          example: false
+          title: success
+          type: boolean
+        error:
+          $ref: "#/components/schemas/_channels_me_videos_get_404_response_error"
+      title: _channels_me_videos_get_404_response
+      type: object
+    _channels_me_analytics_get_200_response:
+      example:
+        data:
+          period: 30d
+          timeline:
+          - date: 2025-10-01
+            subscribers: 85
+            estimatedMinutesWatched: 3500
+            views: 15000
+          - date: 2025-10-01
+            subscribers: 85
+            estimatedMinutesWatched: 3500
+            views: 15000
+          metrics:
+            subscribers: 2500
+            estimatedMinutesWatched: 125000
+            averageViewDuration: 180
+            views: 500000
+          topVideos:
+          - thumbnail: https://i.ytimg.com/vi/dQw4w9WgXcQ/default.jpg
+            videoId: dQw4w9WgXcQ
+            title: Top Performing Video
+            views: 50000
+          - thumbnail: https://i.ytimg.com/vi/dQw4w9WgXcQ/default.jpg
+            videoId: dQw4w9WgXcQ
+            title: Top Performing Video
+            views: 50000
+          - thumbnail: https://i.ytimg.com/vi/dQw4w9WgXcQ/default.jpg
+            videoId: dQw4w9WgXcQ
+            title: Top Performing Video
+            views: 50000
+          - thumbnail: https://i.ytimg.com/vi/dQw4w9WgXcQ/default.jpg
+            videoId: dQw4w9WgXcQ
+            title: Top Performing Video
+            views: 50000
+          - thumbnail: https://i.ytimg.com/vi/dQw4w9WgXcQ/default.jpg
+            videoId: dQw4w9WgXcQ
+            title: Top Performing Video
+            views: 50000
+          demographics:
+            gender:
+              other: 1.7
+              female: 35.8
+              male: 62.5
+            topCountries:
+            - country: United States
+              countryCode: US
+              percentage: 45.2
+            - country: United States
+              countryCode: US
+              percentage: 45.2
+            ageGroups:
+            - ageRange: 18-24
+              percentage: 35.5
+            - ageRange: 18-24
+              percentage: 35.5
+        success: true
+      properties:
+        success:
+          example: true
+          title: success
+          type: boolean
+        data:
+          $ref: "#/components/schemas/ChannelAnalytics"
+      title: _channels_me_analytics_get_200_response
+      type: object
+    _channels_me_settings_get_200_response:
+      example:
+        data:
+          syncFrequency: daily
+          autoCreatePrediction: false
+          autoTracking: true
+          notifyOnNewVideo: true
+        success: true
+      properties:
+        success:
+          example: true
+          title: success
+          type: boolean
+        data:
+          $ref: "#/components/schemas/ChannelSettings"
+      title: _channels_me_settings_get_200_response
+      type: object
+    _notifications_get_200_response:
+      example:
+        pagination:
+          totalItems: 127
+          hasNextPage: true
+          limit: 20
+          totalPages: 7
+          hasPreviousPage: false
+          page: 1
+        data:
+        - createdAt: 2025-10-03T12:00:00Z
+          read: false
+          data:
+            predictionId: pred_abc123
+            videoTitle: How to Build a React App
+          actionUrl: /predictions/pred_abc123
+          id: notif_abc123
+          type: prediction_complete
+          title: Prediction Completed
+          message: Your prediction for "How to Build a React App" is ready
+          readAt: 2000-01-23T04:56:07.000+00:00
+        - createdAt: 2025-10-03T12:00:00Z
+          read: false
+          data:
+            predictionId: pred_abc123
+            videoTitle: How to Build a React App
+          actionUrl: /predictions/pred_abc123
+          id: notif_abc123
+          type: prediction_complete
+          title: Prediction Completed
+          message: Your prediction for "How to Build a React App" is ready
+          readAt: 2000-01-23T04:56:07.000+00:00
+        success: true
+        unreadCount: 5
+      properties:
+        success:
+          example: true
+          title: success
+          type: boolean
+        data:
+          items:
+            $ref: "#/components/schemas/Notification"
+          title: data
+          type: array
+        pagination:
+          $ref: "#/components/schemas/Pagination"
+        unreadCount:
+          example: 5
+          title: unreadCount
+          type: integer
+      title: _notifications_get_200_response
+      type: object
+    _notifications_mark_all_read_patch_200_response:
+      example:
+        success: true
+        updatedCount: 12
+        message: All notifications marked as read
+      properties:
+        success:
+          example: true
+          title: success
+          type: boolean
+        message:
+          example: All notifications marked as read
+          title: message
+          type: string
+        updatedCount:
+          example: 12
+          title: updatedCount
+          type: integer
+      title: _notifications_mark_all_read_patch_200_response
+      type: object
+    _history_recent_get_200_response:
+      example:
+        data:
+        - createdAt: 2025-10-03T12:00:00Z
+          predictedViews: 125000
+          publishedAt: 2025-10-10T14:00:00Z
+          accuracy: 94.4
+          id: pred_abc123
+          videoTitle: How to Build a React App in 2025
+          category: Education
+          actualViews: 118000
+          status: completed
+        - createdAt: 2025-10-03T12:00:00Z
+          predictedViews: 125000
+          publishedAt: 2025-10-10T14:00:00Z
+          accuracy: 94.4
+          id: pred_abc123
+          videoTitle: How to Build a React App in 2025
+          category: Education
+          actualViews: 118000
+          status: completed
+        success: true
+      properties:
+        success:
+          example: true
+          title: success
+          type: boolean
+        data:
+          items:
+            $ref: "#/components/schemas/PredictionSummary"
+          title: data
+          type: array
+      title: _history_recent_get_200_response
+      type: object
+    _categories_get_200_response_data_inner:
+      example:
+        name: Gaming
+        icon: 🎮
+        description: "Video games, walkthroughs, reviews"
+        id: gaming
+      properties:
+        id:
+          example: gaming
+          title: id
+          type: string
+        name:
+          example: Gaming
+          title: name
+          type: string
+        description:
+          example: "Video games, walkthroughs, reviews"
+          title: description
+          type: string
+        icon:
+          example: 🎮
+          title: icon
+          type: string
+      title: _categories_get_200_response_data_inner
+      type: object
+    _categories_get_200_response:
+      example:
+        data:
+        - name: Gaming
+          icon: 🎮
+          description: "Video games, walkthroughs, reviews"
+          id: gaming
+        - name: Gaming
+          icon: 🎮
+          description: "Video games, walkthroughs, reviews"
+          id: gaming
+        success: true
+      properties:
+        success:
+          example: true
+          title: success
+          type: boolean
+        data:
+          items:
+            $ref: "#/components/schemas/_categories_get_200_response_data_inner"
+          title: data
+          type: array
+      title: _categories_get_200_response
+      type: object
+    _languages_get_200_response_data_inner:
+      example:
+        nativeName: English
+        code: en
+        name: English
+      properties:
+        code:
+          example: en
+          title: code
+          type: string
+        name:
+          example: English
+          title: name
+          type: string
+        nativeName:
+          example: English
+          title: nativeName
+          type: string
+      title: _languages_get_200_response_data_inner
+      type: object
+    _languages_get_200_response:
+      example:
+        data:
+        - nativeName: English
+          code: en
+          name: English
+        - nativeName: English
+          code: en
+          name: English
+        success: true
+      properties:
+        success:
+          example: true
+          title: success
+          type: boolean
+        data:
+          items:
+            $ref: "#/components/schemas/_languages_get_200_response_data_inner"
+          title: data
+          type: array
+      title: _languages_get_200_response
+      type: object
+    _health_get_200_response_services:
+      example:
+        database: operational
+        cache: operational
+        mlModel: operational
+      properties:
+        database:
+          example: operational
+          title: database
+          type: string
+        mlModel:
+          example: operational
+          title: mlModel
+          type: string
+        cache:
+          example: operational
+          title: cache
+          type: string
+      title: _health_get_200_response_services
+      type: object
+    _health_get_200_response:
+      example:
+        services:
+          database: operational
+          cache: operational
+          mlModel: operational
+        version: 1.0.0
+        status: healthy
+        timestamp: 2025-10-03T12:00:00Z
+      properties:
+        status:
+          example: healthy
+          title: status
+          type: string
+        timestamp:
+          example: 2025-10-03T12:00:00Z
+          format: date-time
+          title: timestamp
+          type: string
+        version:
+          example: 1.0.0
+          title: version
+          type: string
+        services:
+          $ref: "#/components/schemas/_health_get_200_response_services"
+      title: _health_get_200_response
+      type: object
+    AuthResponse_tokens:
+      example:
+        expiresIn: 3600
+        accessToken: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+        tokenType: Bearer
+        refreshToken: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+      properties:
+        accessToken:
+          example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+          title: accessToken
+          type: string
+        refreshToken:
+          example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+          title: refreshToken
+          type: string
+        expiresIn:
+          description: Access token expiration time in seconds
+          example: 3600
+          title: expiresIn
+          type: integer
+        tokenType:
+          example: Bearer
+          title: tokenType
+          type: string
+      title: AuthResponse_tokens
+      type: object
+    NotificationSettings_email:
+      example:
+        predictionComplete: true
+        accuracyMilestones: true
+        marketing: false
+        weeklySummary: true
+        productUpdates: false
+      properties:
+        predictionComplete:
+          example: true
+          title: predictionComplete
+          type: boolean
+        weeklySummary:
+          example: true
+          title: weeklySummary
+          type: boolean
+        accuracyMilestones:
+          example: true
+          title: accuracyMilestones
+          type: boolean
+        productUpdates:
+          example: false
+          title: productUpdates
+          type: boolean
+        marketing:
+          example: false
+          title: marketing
+          type: boolean
+      title: NotificationSettings_email
+      type: object
+    NotificationSettings_inApp:
+      example:
+        predictionComplete: true
+        accuracyMilestones: true
+        systemAnnouncements: true
+      properties:
+        predictionComplete:
+          example: true
+          title: predictionComplete
+          type: boolean
+        accuracyMilestones:
+          example: true
+          title: accuracyMilestones
+          type: boolean
+        systemAnnouncements:
+          example: true
+          title: systemAnnouncements
+          type: boolean
+      title: NotificationSettings_inApp
+      type: object
+    PredictionRequest_channelInfo:
+      example:
+        uploadFrequency: weekly
+        subscriberCount: 50000
+        averageViewsPerVideo: 10000
+        channelAgeMonths: 24
+      properties:
+        subscriberCount:
+          example: 50000
+          minimum: 0
+          title: subscriberCount
+          type: integer
+        averageViewsPerVideo:
+          example: 10000
+          minimum: 0
+          title: averageViewsPerVideo
+          type: integer
+        channelAgeMonths:
+          example: 24
+          minimum: 0
+          title: channelAgeMonths
+          type: integer
+        uploadFrequency:
+          enum:
+          - daily
+          - weekly
+          - biweekly
+          - monthly
+          - irregular
+          example: weekly
+          title: uploadFrequency
+          type: string
+      title: PredictionRequest_channelInfo
+      type: object
+    PredictionResponse_confidenceInterval:
+      example:
+        lower: 90000
+        upper: 160000
+      properties:
+        lower:
+          example: 90000
+          title: lower
+          type: integer
+        upper:
+          example: 160000
+          title: upper
+          type: integer
+      title: PredictionResponse_confidenceInterval
+      type: object
+    PredictionResponse_factorContributions:
+      example:
+        contentQuality: 35.2
+        topicRelevance: 18.0
+        channelStrength: 28.5
+        timingOptimization: 18.3
+      properties:
+        channelStrength:
+          description: Percentage contribution
+          example: 28.5
+          format: float
+          title: channelStrength
+          type: number
+        contentQuality:
+          example: 35.2
+          format: float
+          title: contentQuality
+          type: number
+        timingOptimization:
+          example: 18.3
+          format: float
+          title: timingOptimization
+          type: number
+        topicRelevance:
+          example: 18.0
+          format: float
+          title: topicRelevance
+          type: number
+      title: PredictionResponse_factorContributions
+      type: object
+    PredictionResponse_recommendations_inner:
+      example:
+        impact: Could increase views by 15-20%
+        type: title
+        priority: high
+        message: Consider adding numbers or questions to your title
+      properties:
+        type:
+          enum:
+          - title
+          - timing
+          - tags
+          - thumbnail
+          example: title
+          title: type
+          type: string
+        priority:
+          enum:
+          - high
+          - medium
+          - low
+          example: high
+          title: priority
+          type: string
+        message:
+          example: Consider adding numbers or questions to your title
+          title: message
+          type: string
+        impact:
+          example: Could increase views by 15-20%
+          title: impact
+          type: string
+      title: PredictionResponse_recommendations_inner
+      type: object
+    PredictionDetail_allOf_channelInfo:
+      example:
+        subscriberCount: 50000
+        averageViewsPerVideo: 10000
+        channelAgeMonths: 24
+      properties:
+        subscriberCount:
+          example: 50000
+          title: subscriberCount
+          type: integer
+        averageViewsPerVideo:
+          example: 10000
+          title: averageViewsPerVideo
+          type: integer
+        channelAgeMonths:
+          example: 24
+          title: channelAgeMonths
+          type: integer
+      title: PredictionDetail_allOf_channelInfo
+      type: object
+    PredictionDetail_allOf_factorContributions:
+      example:
+        contentQuality: 35.2
+        topicRelevance: 18.0
+        channelStrength: 28.5
+        timingOptimization: 18.3
+      properties:
+        channelStrength:
+          example: 28.5
+          format: float
+          title: channelStrength
+          type: number
+        contentQuality:
+          example: 35.2
+          format: float
+          title: contentQuality
+          type: number
+        timingOptimization:
+          example: 18.3
+          format: float
+          title: timingOptimization
+          type: number
+        topicRelevance:
+          example: 18.0
+          format: float
+          title: topicRelevance
+          type: number
+      title: PredictionDetail_allOf_factorContributions
+      type: object
+    PredictionDetail_allOf_recommendations:
+      example:
+        type: title
+        priority: high
+        message: Consider adding numbers to your title
+      properties:
+        type:
+          example: title
+          title: type
+          type: string
+        priority:
+          example: high
+          title: priority
+          type: string
+        message:
+          example: Consider adding numbers to your title
+          title: message
+          type: string
+      title: PredictionDetail_allOf_recommendations
+      type: object
+    PredictionDetail_allOf_viewsTimeline:
+      example:
+        date: 2025-10-11
+        views: 5000
+      properties:
+        date:
+          example: 2025-10-11
+          format: date
+          title: date
+          type: string
+        views:
+          example: 5000
+          title: views
+          type: integer
+      title: PredictionDetail_allOf_viewsTimeline
+      type: object
+    DashboardAnalytics_overview:
+      example:
+        totalPredictions: 127
+        predictionsThisMonth: 23
+        monthlyChange: 15.5
+        averageAccuracy: 78.5
+        creditsRemaining: 50
+      properties:
+        totalPredictions:
+          example: 127
+          title: totalPredictions
+          type: integer
+        predictionsThisMonth:
+          example: 23
+          title: predictionsThisMonth
+          type: integer
+        monthlyChange:
+          example: 15.5
+          format: float
+          title: monthlyChange
+          type: number
+        averageAccuracy:
+          example: 78.5
+          format: float
+          title: averageAccuracy
+          type: number
+        creditsRemaining:
+          example: 50
+          title: creditsRemaining
+          type: integer
+      title: DashboardAnalytics_overview
+      type: object
+    DashboardAnalytics_topCategories_inner:
+      example:
+        percentage: 35.4
+        count: 45
+        category: Gaming
+      properties:
+        category:
+          example: Gaming
+          title: category
+          type: string
+        count:
+          example: 45
+          title: count
+          type: integer
+        percentage:
+          example: 35.4
+          format: float
+          title: percentage
+          type: number
+      title: DashboardAnalytics_topCategories_inner
+      type: object
+    DashboardAnalytics_accuracyTrend_inner:
+      example:
+        date: 2025-10-01
+        accuracy: 76.5
+      properties:
+        date:
+          example: 2025-10-01
+          format: date
+          title: date
+          type: string
+        accuracy:
+          example: 76.5
+          format: float
+          title: accuracy
+          type: number
+      title: DashboardAnalytics_accuracyTrend_inner
+      type: object
+    ChannelAnalytics_metrics:
+      example:
+        subscribers: 2500
+        estimatedMinutesWatched: 125000
+        averageViewDuration: 180
+        views: 500000
+      properties:
+        views:
+          example: 500000
+          title: views
+          type: integer
+        subscribers:
+          example: 2500
+          title: subscribers
+          type: integer
+        estimatedMinutesWatched:
+          example: 125000
+          title: estimatedMinutesWatched
+          type: integer
+        averageViewDuration:
+          description: Average view duration in seconds
+          example: 180
+          title: averageViewDuration
+          type: integer
+      title: ChannelAnalytics_metrics
+      type: object
+    ChannelAnalytics_timeline_inner:
+      example:
+        date: 2025-10-01
+        subscribers: 85
+        estimatedMinutesWatched: 3500
+        views: 15000
+      properties:
+        date:
+          example: 2025-10-01
+          format: date
+          title: date
+          type: string
+        views:
+          example: 15000
+          title: views
+          type: integer
+        subscribers:
+          example: 85
+          title: subscribers
+          type: integer
+        estimatedMinutesWatched:
+          example: 3500
+          title: estimatedMinutesWatched
+          type: integer
+      title: ChannelAnalytics_timeline_inner
+      type: object
+    ChannelAnalytics_topVideos_inner:
+      example:
+        thumbnail: https://i.ytimg.com/vi/dQw4w9WgXcQ/default.jpg
+        videoId: dQw4w9WgXcQ
+        title: Top Performing Video
+        views: 50000
+      properties:
+        videoId:
+          example: dQw4w9WgXcQ
+          title: videoId
+          type: string
+        title:
+          example: Top Performing Video
+          title: title
+          type: string
+        views:
+          example: 50000
+          title: views
+          type: integer
+        thumbnail:
+          example: https://i.ytimg.com/vi/dQw4w9WgXcQ/default.jpg
+          format: uri
+          title: thumbnail
+          type: string
+      title: ChannelAnalytics_topVideos_inner
+      type: object
+    ChannelAnalytics_demographics_ageGroups_inner:
+      example:
+        ageRange: 18-24
+        percentage: 35.5
+      properties:
+        ageRange:
+          example: 18-24
+          title: ageRange
+          type: string
+        percentage:
+          example: 35.5
+          format: float
+          title: percentage
+          type: number
+      title: ChannelAnalytics_demographics_ageGroups_inner
+      type: object
+    ChannelAnalytics_demographics_gender:
+      example:
+        other: 1.7
+        female: 35.8
+        male: 62.5
+      properties:
+        male:
+          example: 62.5
+          format: float
+          title: male
+          type: number
+        female:
+          example: 35.8
+          format: float
+          title: female
+          type: number
+        other:
+          example: 1.7
+          format: float
+          title: other
+          type: number
+      title: ChannelAnalytics_demographics_gender
+      type: object
+    ChannelAnalytics_demographics_topCountries_inner:
+      example:
+        country: United States
+        countryCode: US
+        percentage: 45.2
+      properties:
+        country:
+          example: United States
+          title: country
+          type: string
+        countryCode:
+          example: US
+          title: countryCode
+          type: string
+        percentage:
+          example: 45.2
+          format: float
+          title: percentage
+          type: number
+      title: ChannelAnalytics_demographics_topCountries_inner
+      type: object
+    ChannelAnalytics_demographics:
+      example:
+        gender:
+          other: 1.7
+          female: 35.8
+          male: 62.5
+        topCountries:
+        - country: United States
+          countryCode: US
+          percentage: 45.2
+        - country: United States
+          countryCode: US
+          percentage: 45.2
+        ageGroups:
+        - ageRange: 18-24
+          percentage: 35.5
+        - ageRange: 18-24
+          percentage: 35.5
+      properties:
+        ageGroups:
+          items:
+            $ref: "#/components/schemas/ChannelAnalytics_demographics_ageGroups_inner"
+          title: ageGroups
+          type: array
+        gender:
+          $ref: "#/components/schemas/ChannelAnalytics_demographics_gender"
+        topCountries:
+          items:
+            $ref: "#/components/schemas/ChannelAnalytics_demographics_topCountries_inner"
+          title: topCountries
+          type: array
+      title: ChannelAnalytics_demographics
+      type: object
+    inline_object_error_details_inner:
+      example:
+        field: email
+        message: Invalid email format
+      properties:
+        field:
+          example: email
+          title: field
+          type: string
+        message:
+          example: Invalid email format
+          title: message
+          type: string
+      title: inline_object_error_details_inner
+      type: object
+    inline_object_error:
+      example:
+        code: VALIDATION_ERROR
+        details:
+        - field: email
+          message: Invalid email format
+        - field: email
+          message: Invalid email format
+        message: Validation failed
+      properties:
+        code:
+          example: VALIDATION_ERROR
+          title: code
+          type: string
+        message:
+          example: Validation failed
+          title: message
+          type: string
+        details:
+          items:
+            $ref: "#/components/schemas/inline_object_error_details_inner"
+          title: details
+          type: array
+      title: inline_object_error
+      type: object
+    inline_object:
+      example:
+        success: false
+        error:
+          code: VALIDATION_ERROR
+          details:
+          - field: email
+            message: Invalid email format
+          - field: email
+            message: Invalid email format
+          message: Validation failed
+      properties:
+        success:
+          example: false
+          title: success
+          type: boolean
+        error:
+          $ref: "#/components/schemas/inline_object_error"
+      title: inline_object
+      type: object
+    inline_object_1_error:
+      example:
+        code: UNAUTHORIZED
+        message: Authentication required
+      properties:
+        code:
+          example: UNAUTHORIZED
+          title: code
+          type: string
+        message:
+          example: Authentication required
+          title: message
+          type: string
+      title: inline_object_1_error
+      type: object
+    inline_object_1:
+      example:
+        success: false
+        error:
+          code: UNAUTHORIZED
+          message: Authentication required
+      properties:
+        success:
+          example: false
+          title: success
+          type: boolean
+        error:
+          $ref: "#/components/schemas/inline_object_1_error"
+      title: inline_object_1
+      type: object
+    inline_object_2_error:
+      properties:
+        code:
+          example: FORBIDDEN
+          title: code
+          type: string
+        message:
+          example: You don't have permission to access this resource
+          title: message
+          type: string
+      title: inline_object_2_error
+      type: object
+    inline_object_2:
+      properties:
+        success:
+          example: false
+          type: boolean
+        error:
+          $ref: "#/components/schemas/inline_object_2_error"
+      type: object
+    inline_object_3_error:
+      example:
+        code: NOT_FOUND
+        message: Resource not found
+      properties:
+        code:
+          example: NOT_FOUND
+          title: code
+          type: string
+        message:
+          example: Resource not found
+          title: message
+          type: string
+      title: inline_object_3_error
+      type: object
+    inline_object_3:
+      example:
+        success: false
+        error:
+          code: NOT_FOUND
+          message: Resource not found
+      properties:
+        success:
+          example: false
+          title: success
+          type: boolean
+        error:
+          $ref: "#/components/schemas/inline_object_3_error"
+      title: inline_object_3
+      type: object
+    inline_object_4_error:
+      example:
+        code: CONFLICT
+        message: Email already exists
+      properties:
+        code:
+          example: CONFLICT
+          title: code
+          type: string
+        message:
+          example: Email already exists
+          title: message
+          type: string
+      title: inline_object_4_error
+      type: object
+    inline_object_4:
+      example:
+        success: false
+        error:
+          code: CONFLICT
+          message: Email already exists
+      properties:
+        success:
+          example: false
+          title: success
+          type: boolean
+        error:
+          $ref: "#/components/schemas/inline_object_4_error"
+      title: inline_object_4
+      type: object
+    inline_object_5_error:
+      example:
+        code: RATE_LIMIT_EXCEEDED
+        retryAfter: 60
+        message: Too many requests. Please try again later
+      properties:
+        code:
+          example: RATE_LIMIT_EXCEEDED
+          title: code
+          type: string
+        message:
+          example: Too many requests. Please try again later
+          title: message
+          type: string
+        retryAfter:
+          description: Seconds until rate limit resets
+          example: 60
+          title: retryAfter
+          type: integer
+      title: inline_object_5_error
+      type: object
+    inline_object_5:
+      example:
+        success: false
+        error:
+          code: RATE_LIMIT_EXCEEDED
+          retryAfter: 60
+          message: Too many requests. Please try again later
+      properties:
+        success:
+          example: false
+          title: success
+          type: boolean
+        error:
+          $ref: "#/components/schemas/inline_object_5_error"
+      title: inline_object_5
+      type: object
+    inline_object_6_error:
+      properties:
+        code:
+          example: INTERNAL_SERVER_ERROR
+          title: code
+          type: string
+        message:
+          example: An unexpected error occurred
+          title: message
+          type: string
+      title: inline_object_6_error
+      type: object
+    inline_object_6:
+      properties:
+        success:
+          example: false
+          type: boolean
+        error:
+          $ref: "#/components/schemas/inline_object_6_error"
+      type: object
+  securitySchemes:
+    BearerAuth:
+      bearerFormat: JWT
+      description: JWT token obtained from login or registration
+      scheme: bearer
+      type: http
+x-tagGroups:
+- name: Core API
+  tags:
+  - Authentication
+  - Users
+  - Predictions
+- name: Data & Insights
+  tags:
+  - History
+  - Analytics
+- name: Integrations
+  tags:
+  - Channels
+  - Notifications
+x-rateLimit:
+  default:
+    limit: 100
+    window: 15m
+    description: 100 requests per 15 minutes for authenticated users
+  predictions:
+    limit: 50
+    window: 1h
+    description: 50 prediction requests per hour
+  auth:
+    limit: 5
+    window: 15m
+    description: 5 authentication attempts per 15 minutes per IP
+x-errorCodes:
+- code: VALIDATION_ERROR
+  message: Request validation failed
+  httpStatus: 400
+- code: UNAUTHORIZED
+  message: Authentication required
+  httpStatus: 401
+- code: FORBIDDEN
+  message: Insufficient permissions
+  httpStatus: 403
+- code: NOT_FOUND
+  message: Resource not found
+  httpStatus: 404
+- code: CONFLICT
+  message: Resource already exists
+  httpStatus: 409
+- code: RATE_LIMIT_EXCEEDED
+  message: Too many requests
+  httpStatus: 429
+- code: INSUFFICIENT_CREDITS
+  message: Not enough credits to perform action
+  httpStatus: 402
+- code: NO_CHANNEL_CONNECTED
+  message: No YouTube channel connected
+  httpStatus: 404
+- code: CHANNEL_SYNC_FAILED
+  message: Failed to sync channel data
+  httpStatus: 500
+- code: PREDICTION_FAILED
+- code: PREDICTION_FAILED
+  message: Prediction model failed to process request
+  httpStatus: 500
+- code: INTERNAL_SERVER_ERROR
+  message: An unexpected error occurred
+  httpStatus: 500
