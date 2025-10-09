@@ -1,0 +1,32 @@
+[project]
+name = "viewtrendssl"
+version = "0.1.0"
+description = ""
+authors = [
+    {name = "Kevin Sanjula",email = "kevinxsanjula@gmail.com"}
+]
+license = {text = "mit"}
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "fastapi (>=0.118.2,<0.119.0)",
+    "uvicorn[standard] (>=0.37.0,<0.38.0)",
+    "pydantic-settings (>=2.11.0,<3.0.0)",
+    "python-dotenv (>=1.1.1,<2.0.0)"
+]
+
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
+[tool.poetry]
+package-mode = false
+
+[tool.poetry.group.dev.dependencies]
+black = "^25.9.0"
+isort = "^6.1.0"
+ruff = "^0.14.0"
+pytest = "^8.4.2"
+pytest-asyncio = "^1.2.0"
+httpx = "^0.28.1"
+
