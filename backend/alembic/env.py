@@ -32,15 +32,16 @@ config.set_main_option("sqlalchemy.url", db_url)
 # import your Base from SQLAlchemy models
 import sys
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
-# from app.db.session import Base
+from app.db.session import Base
 # import all your models
-# from app.models import user
+from app import models
 
 # add your model's MetaData object here
 # for 'autogenerate' support
 # from myapp import mymodel
 # target_metadata = mymodel.Base.metadata
-target_metadata = None
+target_metadata = Base.metadata
+print("Tables in metadata:", target_metadata.tables.keys())
 
 # other values from the config, defined by the needs of env.py,
 # can be acquired:
