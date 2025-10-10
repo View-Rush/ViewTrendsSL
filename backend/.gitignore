@@ -51,6 +51,11 @@ coverage.xml
 .pytest_cache/
 cover/
 
+# Ignore test databases
+test.db
+*.sqlite
+*.sqlite3
+
 # Translations
 *.mo
 *.pot
