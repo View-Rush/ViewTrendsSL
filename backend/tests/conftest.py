@@ -112,3 +112,30 @@ def authenticated_client(client, test_user):
     token = response.json()["access_token"]
     client.headers = {**client.headers, "Authorization": f"Bearer {token}"}
     return client
+
+@pytest.fixture
+def superuser_auth_headers(client: TestClient, superuser: User) -> dict:
+    """Get authentication headers for superuser."""
+    response = client.post(
+        "/api/v1/auth/login",
+        data={
+            "username": superuser.username,
+            "password": "adminpassword"
+        }
+    )
+    token = response.json()["access_token"]
+    return {"Authorization": f"Bearer {token}"}
+
+
+@pytest.fixture
+def auth_headers(client: TestClient, test_user: User) -> dict:
+    """Get authentication headers for test user."""
+    response = client.post(
+        "/api/v1/auth/login",
+        data={
+            "username": test_user.email,
+            "password": "testpassword123"
+        }
+    )
+    token = response.json()["access_token"]
+    return {"Authorization": f"Bearer {token}"}
