@@ -30,3 +30,5 @@ class User(Base):
     # Relationships
     channels = relationship("Channel", back_populates="user", cascade="all, delete-orphan")
     videos = relationship("Video", back_populates="user", cascade="all, delete-orphan")
+    predictions = relationship("Prediction", back_populates="user", cascade="all, delete-orphan")
+    prediction_performance = relationship("PredictionPerformance", back_populates="user", uselist=False, cascade="all, delete-orphan")

@@ -23,7 +23,15 @@ from app.schemas.video import (
     ThumbnailAnalysisRequest,
     ThumbnailAnalysisResponse,
 )
-
+from app.schemas.prediction import (
+    PredictionCreate,
+    PredictionResult,
+    PredictionInDB,
+    PredictionResponse,
+    PredictionListResponse,
+    PredictionPerformanceResponse,
+    UpdateActualViews,
+)
 
 __all__ = [
     "UserCreate",
@@ -44,4 +52,11 @@ __all__ = [
     "VideoListResponse",
     "ThumbnailAnalysisRequest",
     "ThumbnailAnalysisResponse",
+    "PredictionCreate",
+    "PredictionResult",
+    "PredictionInDB",
+    "PredictionResponse",
+    "PredictionListResponse",
+    "PredictionPerformanceResponse",
+    "UpdateActualViews",
 ]

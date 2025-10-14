@@ -39,4 +39,4 @@ class Channel(Base):
     # Relationships
     user = relationship("User", back_populates="channels")
     videos = relationship("Video", back_populates="channel", cascade="all, delete-orphan")
-    # predictions = relationship("Prediction", back_populates="channel", cascade="all, delete-orphan")
+    predictions = relationship("Prediction", back_populates="channel", cascade="all, delete-orphan")
