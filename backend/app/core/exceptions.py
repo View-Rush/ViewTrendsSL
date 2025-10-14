@@ -56,3 +56,11 @@ class ForbiddenException(HTTPException):
             status_code=status.HTTP_403_FORBIDDEN,
             detail=detail,
         )
+
+
+class VideoNotFoundException(HTTPException):
+    def __init__(self, detail: str = "Video not found"):
+        super().__init__(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=detail,
+        )

@@ -14,6 +14,16 @@ from app.schemas.channel import (
     ChannelResponse,
     ChannelListResponse,
 )
+from app.schemas.video import (
+    VideoCreate,
+    VideoUpdate,
+    VideoInDB,
+    VideoResponse,
+    VideoListResponse,
+    ThumbnailAnalysisRequest,
+    ThumbnailAnalysisResponse,
+)
+
 
 __all__ = [
     "UserCreate",
@@ -27,4 +37,11 @@ __all__ = [
     "ChannelInDB",
     "ChannelResponse",
     "ChannelListResponse",
+    "VideoCreate",
+    "VideoUpdate",
+    "VideoInDB",
+    "VideoResponse",
+    "VideoListResponse",
+    "ThumbnailAnalysisRequest",
+    "ThumbnailAnalysisResponse",
 ]
