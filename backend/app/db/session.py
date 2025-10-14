@@ -43,7 +43,6 @@ from fastapi import Depends
 def get_db():
     db = SessionLocal()  # create a new DB session
     try:
-        print("hehe")
         yield db        # yield it to the FastAPI route
     finally:
         db.close()

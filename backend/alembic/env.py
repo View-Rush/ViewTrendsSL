@@ -33,8 +33,7 @@ config.set_main_option("sqlalchemy.url", db_url)
 import sys
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 from app.db.session import Base
-# import all your models
-from app import models
+from app.models import user, channel
 
 # add your model's MetaData object here
 # for 'autogenerate' support
