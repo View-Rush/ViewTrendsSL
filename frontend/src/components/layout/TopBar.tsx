@@ -46,7 +46,7 @@ export function TopBar() {
                     {user?.email ? getInitials(user.email) : 'U'}
                   </AvatarFallback>
                 </Avatar>
-                <span className="text-sm font-medium">{user?.email || 'User'}</span>
+                <span className="text-sm font-medium">{user?.full_name || 'User'}</span>
               </button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">

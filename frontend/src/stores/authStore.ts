@@ -48,7 +48,7 @@ export const useAuthStore = create<AuthState>((set) => ({
             const userData = await authService.register({
                 email,
                 password,
-                username: username,
+                full_name: username,
             });
 
             const user = userData as unknown as User;

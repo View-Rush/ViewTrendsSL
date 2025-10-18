@@ -1,22 +1,22 @@
-import type {Body_login_api_v1_auth_login_post, Token, UserCreate, UserResponse,} from '@/api';
+import {type Body_login_api_v1_auth_login_post, OpenAPI, type Token, type UserCreate, type UserResponse,} from '@/api';
 import {AuthenticationService, UsersService} from "@/api";
 import type {User} from "@/types";
 
 
 export const authService = {
     async login(credentials: Body_login_api_v1_auth_login_post): Promise<Token> {
-        const token = await AuthenticationService.loginApiV1AuthLoginPost({
-            formData: credentials,
-        });
+        const token = await AuthenticationService.loginApiV1AuthLoginPost(credentials);
         // Optionally store token in localStorage
         localStorage.setItem('token', token.access_token);
+
+        // Set token for generated API client
+        OpenAPI.TOKEN = token.access_token;
+
         return token;
     },
 
     async register(data: UserCreate): Promise<UserResponse> {
-        return AuthenticationService.registerApiV1AuthRegisterPost({
-            requestBody: data,
-        });
+        return AuthenticationService.registerApiV1AuthRegisterPost(data);
     },
 
     async getCurrentUser(): Promise<UserResponse> {
@@ -37,6 +37,7 @@ export const authService = {
     logout() {
         localStorage.removeItem('token');
         localStorage.removeItem('user');
+        OpenAPI.TOKEN = "";
     },
 
     getToken(): string | null {
@@ -45,6 +46,7 @@ export const authService = {
 
     setToken(token: string) {
         localStorage.setItem('token', token);
+        OpenAPI.TOKEN = token;
     },
 
     getStoredUser(): User | null {
