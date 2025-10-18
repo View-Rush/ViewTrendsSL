@@ -14,14 +14,13 @@ export class AuthenticationService {
     /**
      * Register
      * Register a new user with username/password
+     * @param requestBody
      * @returns UserResponse Successful Response
      * @throws ApiError
      */
-    public static registerApiV1AuthRegisterPost({
-        requestBody,
-    }: {
+    public static registerApiV1AuthRegisterPost(
         requestBody: UserCreate,
-    }): CancelablePromise<UserResponse> {
+    ): CancelablePromise<UserResponse> {
         return __request(OpenAPI, {
             method: 'POST',
             url: '/api/v1/auth/register',
@@ -35,14 +34,13 @@ export class AuthenticationService {
     /**
      * Login
      * Login with username/password and get JWT token
+     * @param formData
      * @returns Token Successful Response
      * @throws ApiError
      */
-    public static loginApiV1AuthLoginPost({
-        formData,
-    }: {
+    public static loginApiV1AuthLoginPost(
         formData: Body_login_api_v1_auth_login_post,
-    }): CancelablePromise<Token> {
+    ): CancelablePromise<Token> {
         return __request(OpenAPI, {
             method: 'POST',
             url: '/api/v1/auth/login',

@@ -13,14 +13,13 @@ export class ChannelsService {
     /**
      * Create Channel
      * Create a new channel or update if exists.
+     * @param requestBody
      * @returns ChannelResponse Successful Response
      * @throws ApiError
      */
-    public static createChannelApiV1ChannelsPost({
-        requestBody,
-    }: {
+    public static createChannelApiV1ChannelsPost(
         requestBody: ChannelCreate,
-    }): CancelablePromise<ChannelResponse> {
+    ): CancelablePromise<ChannelResponse> {
         return __request(OpenAPI, {
             method: 'POST',
             url: '/api/v1/channels/',
@@ -34,18 +33,17 @@ export class ChannelsService {
     /**
      * List Channels
      * Get all channels for the current user.
+     * @param skip
+     * @param limit
+     * @param connectedOnly
      * @returns ChannelListResponse Successful Response
      * @throws ApiError
      */
-    public static listChannelsApiV1ChannelsGet({
-        skip,
-        limit = 100,
-        connectedOnly = false,
-    }: {
+    public static listChannelsApiV1ChannelsGet(
         skip?: number,
-        limit?: number,
-        connectedOnly?: boolean,
-    }): CancelablePromise<ChannelListResponse> {
+        limit: number = 100,
+        connectedOnly: boolean = false,
+    ): CancelablePromise<ChannelListResponse> {
         return __request(OpenAPI, {
             method: 'GET',
             url: '/api/v1/channels/',
@@ -62,14 +60,13 @@ export class ChannelsService {
     /**
      * Get Channel
      * Get a specific channel.
+     * @param channelId
      * @returns ChannelResponse Successful Response
      * @throws ApiError
      */
-    public static getChannelApiV1ChannelsChannelIdGet({
-        channelId,
-    }: {
+    public static getChannelApiV1ChannelsChannelIdGet(
         channelId: number,
-    }): CancelablePromise<ChannelResponse> {
+    ): CancelablePromise<ChannelResponse> {
         return __request(OpenAPI, {
             method: 'GET',
             url: '/api/v1/channels/{channel_id}',
@@ -84,16 +81,15 @@ export class ChannelsService {
     /**
      * Update Channel
      * Update a channel.
+     * @param channelId
+     * @param requestBody
      * @returns ChannelResponse Successful Response
      * @throws ApiError
      */
-    public static updateChannelApiV1ChannelsChannelIdPatch({
-        channelId,
-        requestBody,
-    }: {
+    public static updateChannelApiV1ChannelsChannelIdPatch(
         channelId: number,
         requestBody: ChannelUpdate,
-    }): CancelablePromise<ChannelResponse> {
+    ): CancelablePromise<ChannelResponse> {
         return __request(OpenAPI, {
             method: 'PATCH',
             url: '/api/v1/channels/{channel_id}',
@@ -110,14 +106,13 @@ export class ChannelsService {
     /**
      * Delete Channel
      * Delete a channel.
+     * @param channelId
      * @returns void
      * @throws ApiError
      */
-    public static deleteChannelApiV1ChannelsChannelIdDelete({
-        channelId,
-    }: {
+    public static deleteChannelApiV1ChannelsChannelIdDelete(
         channelId: number,
-    }): CancelablePromise<void> {
+    ): CancelablePromise<void> {
         return __request(OpenAPI, {
             method: 'DELETE',
             url: '/api/v1/channels/{channel_id}',

@@ -5,4 +5,8 @@
 /**
  * Prediction status enum.
  */
-export type PredictionStatus = 'pending' | 'completed' | 'failed';
+export enum PredictionStatus {
+    PENDING = 'pending',
+    COMPLETED = 'completed',
+    FAILED = 'failed',
+}

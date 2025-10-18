@@ -23,14 +23,13 @@ export class UsersService {
     /**
      * Update Current User
      * Update current user (username/email)
+     * @param requestBody
      * @returns UserResponse Successful Response
      * @throws ApiError
      */
-    public static updateCurrentUserApiV1UsersMePut({
-        requestBody,
-    }: {
+    public static updateCurrentUserApiV1UsersMePut(
         requestBody: UserUpdate,
-    }): CancelablePromise<UserResponse> {
+    ): CancelablePromise<UserResponse> {
         return __request(OpenAPI, {
             method: 'PUT',
             url: '/api/v1/users/me',
@@ -44,14 +43,13 @@ export class UsersService {
     /**
      * Get User By Id
      * Get user by ID (superuser only)
+     * @param userId
      * @returns UserResponse Successful Response
      * @throws ApiError
      */
-    public static getUserByIdApiV1UsersUserIdGet({
-        userId,
-    }: {
+    public static getUserByIdApiV1UsersUserIdGet(
         userId: number,
-    }): CancelablePromise<UserResponse> {
+    ): CancelablePromise<UserResponse> {
         return __request(OpenAPI, {
             method: 'GET',
             url: '/api/v1/users/{user_id}',

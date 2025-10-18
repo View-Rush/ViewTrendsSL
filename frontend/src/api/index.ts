@@ -18,7 +18,7 @@ export type { PredictionCreate } from './models/PredictionCreate';
 export type { PredictionListResponse } from './models/PredictionListResponse';
 export type { PredictionPerformanceResponse } from './models/PredictionPerformanceResponse';
 export type { PredictionResponse } from './models/PredictionResponse';
-export type { PredictionStatus } from './models/PredictionStatus';
+export { PredictionStatus } from './models/PredictionStatus';
 export type { ThumbnailAnalysisRequest } from './models/ThumbnailAnalysisRequest';
 export type { ThumbnailAnalysisResponse } from './models/ThumbnailAnalysisResponse';
 export type { Token } from './models/Token';

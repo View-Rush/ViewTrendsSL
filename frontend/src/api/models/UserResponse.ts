@@ -4,7 +4,7 @@
 /* eslint-disable */
 export type UserResponse = {
     email: string;
-    username: string;
+    full_name: string;
     id: number;
     is_active: boolean;
     is_superuser: boolean;

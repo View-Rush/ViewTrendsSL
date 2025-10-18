@@ -16,14 +16,13 @@ export class PredictionsService {
      * Create Prediction
      * Create a new prediction for a video.
      * Uses the ML forecasting model to predict 30-day view count.
+     * @param requestBody
      * @returns PredictionResponse Successful Response
      * @throws ApiError
      */
-    public static createPredictionApiV1PredictionsPost({
-        requestBody,
-    }: {
+    public static createPredictionApiV1PredictionsPost(
         requestBody: PredictionCreate,
-    }): CancelablePromise<PredictionResponse> {
+    ): CancelablePromise<PredictionResponse> {
         return __request(OpenAPI, {
             method: 'POST',
             url: '/api/v1/predictions/',
@@ -37,22 +36,21 @@ export class PredictionsService {
     /**
      * List Predictions
      * Get all predictions for the current user with optional filters.
+     * @param skip
+     * @param limit
+     * @param channelId
+     * @param videoId
+     * @param status
      * @returns PredictionListResponse Successful Response
      * @throws ApiError
      */
-    public static listPredictionsApiV1PredictionsGet({
-        skip,
-        limit = 100,
-        channelId,
-        videoId,
-        status,
-    }: {
+    public static listPredictionsApiV1PredictionsGet(
         skip?: number,
-        limit?: number,
+        limit: number = 100,
         channelId?: (number | null),
         videoId?: (number | null),
         status?: (PredictionStatus | null),
-    }): CancelablePromise<PredictionListResponse> {
+    ): CancelablePromise<PredictionListResponse> {
         return __request(OpenAPI, {
             method: 'GET',
             url: '/api/v1/predictions/',
@@ -83,14 +81,13 @@ export class PredictionsService {
     /**
      * Get Prediction
      * Get a specific prediction.
+     * @param predictionId
      * @returns PredictionResponse Successful Response
      * @throws ApiError
      */
-    public static getPredictionApiV1PredictionsPredictionIdGet({
-        predictionId,
-    }: {
+    public static getPredictionApiV1PredictionsPredictionIdGet(
         predictionId: number,
-    }): CancelablePromise<PredictionResponse> {
+    ): CancelablePromise<PredictionResponse> {
         return __request(OpenAPI, {
             method: 'GET',
             url: '/api/v1/predictions/{prediction_id}',
@@ -105,16 +102,15 @@ export class PredictionsService {
     /**
      * Update Prediction Actual Views
      * Update actual views for a prediction and calculate accuracy metrics.
+     * @param predictionId
+     * @param requestBody
      * @returns PredictionResponse Successful Response
      * @throws ApiError
      */
-    public static updatePredictionActualViewsApiV1PredictionsPredictionIdActualViewsPatch({
-        predictionId,
-        requestBody,
-    }: {
+    public static updatePredictionActualViewsApiV1PredictionsPredictionIdActualViewsPatch(
         predictionId: number,
         requestBody: UpdateActualViews,
-    }): CancelablePromise<PredictionResponse> {
+    ): CancelablePromise<PredictionResponse> {
         return __request(OpenAPI, {
             method: 'PATCH',
             url: '/api/v1/predictions/{prediction_id}/actual-views',

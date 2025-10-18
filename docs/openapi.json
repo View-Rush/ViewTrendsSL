@@ -2136,9 +2136,9 @@
             "format": "email",
             "title": "Email"
           },
-          "username": {
+          "full_name": {
             "type": "string",
-            "title": "Username"
+            "title": "Full Name"
           },
           "password": {
             "type": "string",
@@ -2148,7 +2148,7 @@
         "type": "object",
         "required": [
           "email",
-          "username",
+          "full_name",
           "password"
         ],
         "title": "UserCreate"
@@ -2160,9 +2160,9 @@
             "format": "email",
             "title": "Email"
           },
-          "username": {
+          "full_name": {
             "type": "string",
-            "title": "Username"
+            "title": "Full Name"
           },
           "id": {
             "type": "integer",
@@ -2212,7 +2212,7 @@
         "type": "object",
         "required": [
           "email",
-          "username",
+          "full_name",
           "id",
           "is_active",
           "is_superuser",
@@ -2235,7 +2235,7 @@
             ],
             "title": "Email"
           },
-          "username": {
+          "full_name": {
             "anyOf": [
               {
                 "type": "string"
@@ -2244,7 +2244,7 @@
                 "type": "null"
               }
             ],
-            "title": "Username"
+            "title": "Full Name"
           },
           "password": {
             "anyOf": [
