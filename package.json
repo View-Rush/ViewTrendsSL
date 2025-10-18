@@ -1,0 +1,23 @@
+{
+  "name": "viewtrendssl-main",
+  "version": "1.0.0",
+  "main": "index.js",
+  "directories": {
+    "doc": "docs"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "generate:api": "npx openapi-typescript-codegen --input ./docs/openapi.json --output ./frontend/src/api --client axios"  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/View-Rush/ViewTrendsSL.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/View-Rush/ViewTrendsSL/issues"
+  },
+  "homepage": "https://github.com/View-Rush/ViewTrendsSL#readme",
+  "description": ""
+}
