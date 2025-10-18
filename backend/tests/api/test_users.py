@@ -46,23 +46,11 @@ def test_update_current_user_email(authenticated_client):
 def test_update_user_same_name(authenticated_client, db, test_user):
     """Test updating with the same name"""
     # Create another user
-    from app.models.user import User
-    from app.core.security import get_password_hash
-
-    another_user = User(
-        email="another@example.com",
-        full_name="anotheruser",
-        hashed_password=get_password_hash("password123"),
-        is_active=True
-    )
-    db.add(another_user)
-    db.commit()
-
     # Try to update to duplicate username
     response = authenticated_client.put(
         "/api/v1/users/me",
         json={
-            "full_name": "anotheruser"
+            "full_name": "testuser"
         }
     )
     assert response.status_code == status.HTTP_400_BAD_REQUEST

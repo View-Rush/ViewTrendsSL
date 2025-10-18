@@ -69,7 +69,7 @@ def test_superuser(db):
     """Create a test superuser"""
     user = User(
         email="admin@example.com",
-        username="admin",
+        full_name="admin",
         hashed_password=get_password_hash("adminpassword123"),
         is_active=True,
         is_superuser=True
@@ -119,7 +119,7 @@ def superuser_auth_headers(client: TestClient, superuser: User) -> dict:
     response = client.post(
         "/api/v1/auth/login",
         data={
-            "username": superuser.username,
+            "username": superuser.email,
             "password": "adminpassword"
         }
     )

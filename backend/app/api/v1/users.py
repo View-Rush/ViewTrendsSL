@@ -26,14 +26,13 @@ def update_current_user(
 ):
     """Update current user (username/email)"""
     # Check for duplicate username
-    if user_update.username and user_update.username != current_user.username:
-        existing = db.query(User).filter(User.username == user_update.username).first()
-        if existing:
+    if user_update.full_name:
+        if user_update.full_name == current_user.full_name:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Username already exists"
+                detail="Name is the same as the current one"
             )
-        current_user.username = user_update.username
+        current_user.full_name = user_update.full_name
 
     # Check for duplicate email
     if user_update.email and user_update.email != current_user.email:
