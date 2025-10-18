@@ -8,7 +8,7 @@ def test_get_current_user(authenticated_client):
     assert response.status_code == status.HTTP_200_OK
     data = response.json()
     assert data["email"] == "test@example.com"
-    assert data["username"] == "testuser"
+    assert data["full_name"] == "testuser"
 
 
 def test_get_current_user_unauthorized(client):
@@ -22,12 +22,12 @@ def test_update_current_user(authenticated_client):
     response = authenticated_client.put(
         "/api/v1/users/me",
         json={
-            "username": "updateduser"
+            "full_name": "updateduser"
         }
     )
     assert response.status_code == status.HTTP_200_OK
     data = response.json()
-    assert data["username"] == "updateduser"
+    assert data["full_name"] == "updateduser"
 
 
 def test_update_current_user_email(authenticated_client):
@@ -43,15 +43,15 @@ def test_update_current_user_email(authenticated_client):
     assert data["email"] == "newemail@example.com"
 
 
-def test_update_user_duplicate_username(authenticated_client, db, test_user):
-    """Test updating to a duplicate username"""
+def test_update_user_same_name(authenticated_client, db, test_user):
+    """Test updating with the same name"""
     # Create another user
     from app.models.user import User
     from app.core.security import get_password_hash
 
     another_user = User(
         email="another@example.com",
-        username="anotheruser",
+        full_name="anotheruser",
         hashed_password=get_password_hash("password123"),
         is_active=True
     )
@@ -62,7 +62,7 @@ def test_update_user_duplicate_username(authenticated_client, db, test_user):
     response = authenticated_client.put(
         "/api/v1/users/me",
         json={
-            "username": "anotheruser"
+            "full_name": "anotheruser"
         }
     )
     assert response.status_code == status.HTTP_400_BAD_REQUEST

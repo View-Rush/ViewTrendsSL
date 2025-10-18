@@ -19,9 +19,9 @@ class UserService:
         """Get user by email"""
         return self.db.query(User).filter(User.email == email).first()
 
-    def get_user_by_username(self, username: str) -> Optional[User]:
-        """Get user by username"""
-        return self.db.query(User).filter(User.username == username).first()
+    def get_user_by_full_name(self, full_name: str) -> Optional[User]:
+        """Get user by full name"""
+        return self.db.query(User).filter(User.full_name == full_name).first()
 
     def get_user_by_google_id(self, google_id: str) -> Optional[User]:
         """Get user by Google ID"""
@@ -40,13 +40,10 @@ class UserService:
         if self.get_user_by_email(user_data.email):
             raise UserAlreadyExistsException(detail="Email already registered")
 
-        if self.get_user_by_username(user_data.username):
-            raise UserAlreadyExistsException(detail="Username already taken")
-
         # Create user
         db_user = User(
             email=user_data.email,
-            username=user_data.username,
+            full_name=user_data.full_name,
             hashed_password=get_password_hash(user_data.password),
             is_active=True
         )
@@ -75,14 +72,14 @@ class UserService:
         return user
 
     def create_or_update_google_user(
-            self,
-            google_id: str,
-            email: str,
-            username: str,
-            access_token: str,
-            refresh_token: Optional[str] = None,
-            token_expiry: Optional[datetime] = None,
-            has_youtube_access: bool = False
+        self,
+        google_id: str,
+        email: str,
+        full_name: str,
+        access_token: str,
+        refresh_token: Optional[str] = None,
+        token_expiry: Optional[datetime] = None,
+        has_youtube_access: bool = False
     ) -> User:
         """Create or update user from Google OAuth"""
         user = self.get_user_by_google_id(google_id)
@@ -107,16 +104,9 @@ class UserService:
                 user.has_youtube_access = has_youtube_access
             else:
                 # Create new user
-                # Ensure unique username
-                base_username = username
-                counter = 1
-                while self.get_user_by_username(username):
-                    username = f"{base_username}{counter}"
-                    counter += 1
-
                 user = User(
                     email=email,
-                    username=username,
+                    full_name=full_name,
                     google_id=google_id,
                     google_access_token=access_token,
                     google_refresh_token=refresh_token,
@@ -130,6 +120,7 @@ class UserService:
         self.db.refresh(user)
         return user
 
+
     def update_user(self, user_id: int, user_data: UserUpdate) -> User:
         """Update user information"""
         user = self.get_user_by_id(user_id)
@@ -139,10 +130,10 @@ class UserService:
                 raise UserAlreadyExistsException(detail="Email already in use")
             user.email = user_data.email
 
-        if user_data.username and user_data.username != user.username:
-            if self.get_user_by_username(user_data.username):
-                raise UserAlreadyExistsException(detail="Username already taken")
-            user.username = user_data.username
+        if user_data.full_name:
+            if user_data.full_name != user.full_name and self.get_user_by_full_name(user_data.full_name):
+                raise UserAlreadyExistsException(detail="Full name already in use")
+            user.full_name = user_data.full_name
 
         if user_data.password:
             user.hashed_password = get_password_hash(user_data.password)

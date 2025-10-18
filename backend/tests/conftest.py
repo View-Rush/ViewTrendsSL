@@ -53,7 +53,7 @@ def test_user(db):
     """Create a test user"""
     user = User(
         email="test@example.com",
-        username="testuser",
+        full_name="testuser",
         hashed_password=get_password_hash("testpassword123"),
         is_active=True,
         is_superuser=False
@@ -85,7 +85,7 @@ def test_google_user(db):
     """Create a test user with Google OAuth"""
     user = User(
         email="google@example.com",
-        username="googleuser",
+        full_name="googleuser",
         google_id="123456789",
         google_access_token="test_access_token",
         google_refresh_token="test_refresh_token",

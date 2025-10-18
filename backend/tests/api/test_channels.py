@@ -146,7 +146,7 @@ def test_access_other_user_channel(
     # Create another user
     other_user = User(
         email="other@example.com",
-        username="otheruser",
+        full_name="otheruser",
         hashed_password="hashed",
         is_active=True
     )

@@ -8,14 +8,14 @@ def test_register_user(client):
         "/api/v1/auth/register",
         json={
             "email": "newuser@example.com",
-            "username": "newuser",
+            "full_name": "newuser",
             "password": "newpassword123"
         }
     )
     assert response.status_code == status.HTTP_201_CREATED
     data = response.json()
     assert data["email"] == "newuser@example.com"
-    assert data["username"] == "newuser"
+    assert data["full_name"] == "newuser"
     assert "id" in data
     assert data["is_active"] is True
 
@@ -26,26 +26,12 @@ def test_register_duplicate_email(client, test_user):
         "/api/v1/auth/register",
         json={
             "email": test_user.email,
-            "username": "differentuser",
+            "full_name": "differentuser",
             "password": "password123"
         }
     )
     assert response.status_code == status.HTTP_400_BAD_REQUEST
     assert "Email already registered" in response.json()["detail"]
-
-
-def test_register_duplicate_username(client, test_user):
-    """Test registration with duplicate username"""
-    response = client.post(
-        "/api/v1/auth/register",
-        json={
-            "email": "different@example.com",
-            "username": test_user.username,
-            "password": "password123"
-        }
-    )
-    assert response.status_code == status.HTTP_400_BAD_REQUEST
-    assert "Username already taken" in response.json()["detail"]
 
 
 def test_login_success(client, test_user):

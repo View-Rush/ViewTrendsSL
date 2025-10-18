@@ -19,7 +19,7 @@ def test_user(user_service, db):
     """Create a test user"""
     user_data = UserCreate(
         email="test@example.com",
-        username="testuser",
+        full_name="testuser",
         password="password123"
     )
     user = user_service.create_user(user_data)
@@ -31,7 +31,7 @@ def another_user(user_service, db):
     """Create another user for duplicate tests"""
     user_data = UserCreate(
         email="another@example.com",
-        username="anotheruser",
+        full_name="anotheruser",
         password="password123"
     )
     user = user_service.create_user(user_data)
@@ -43,7 +43,7 @@ def test_get_user_by_id(user_service, test_user):
     user = user_service.get_user_by_id(test_user.id)
     assert user.id == test_user.id
     assert user.email == test_user.email
-    assert user.username == test_user.username
+    assert user.full_name == test_user.full_name
 
 
 def test_get_user_by_id_not_found(user_service):
@@ -54,9 +54,9 @@ def test_get_user_by_id_not_found(user_service):
 
 def test_update_username(user_service, test_user):
     """Test updating username"""
-    update_data = UserUpdate(username="updateduser")
+    update_data = UserUpdate(full_name="updateduser")
     updated_user = user_service.update_user(test_user.id, update_data)
-    assert updated_user.username == "updateduser"
+    assert updated_user.full_name == "updateduser"
 
 
 def test_update_email(user_service, test_user):
@@ -68,7 +68,7 @@ def test_update_email(user_service, test_user):
 
 def test_update_duplicate_username(user_service, test_user, another_user):
     """Test updating to a duplicate username raises exception"""
-    update_data = UserUpdate(username=another_user.username)
+    update_data = UserUpdate(full_name=another_user.full_name)
     with pytest.raises(UserAlreadyExistsException):
         user_service.update_user(test_user.id, update_data)
 
@@ -102,13 +102,13 @@ def test_create_or_update_google_user_new(user_service, db):
     """Test creating a new Google user"""
     google_id = "google123"
     email = "google@example.com"
-    username = "googleuser"
+    full_name = "googleuser"
     access_token = "token123"
 
     user = user_service.create_or_update_google_user(
         google_id=google_id,
         email=email,
-        username=username,
+        full_name=full_name,
         access_token=access_token,
         token_expiry=datetime.utcnow() + timedelta(hours=1)
     )
@@ -116,7 +116,7 @@ def test_create_or_update_google_user_new(user_service, db):
     assert user.google_id == google_id
     assert user.email == email
     assert user.google_access_token == access_token
-    assert user.username.startswith("googleuser")
+    assert user.full_name.startswith("googleuser")
 
 
 def test_create_or_update_google_user_existing(user_service, test_user):
@@ -126,7 +126,7 @@ def test_create_or_update_google_user_existing(user_service, test_user):
     user = user_service.create_or_update_google_user(
         google_id=google_id,
         email=test_user.email,
-        username=test_user.username,
+        full_name=test_user.full_name,
         access_token=access_token,
         token_expiry=datetime.utcnow() + timedelta(hours=1)
     )
