@@ -1,260 +1,178 @@
-import { useQuery } from '@tanstack/react-query';
-import { DashboardLayout } from '@/components/layout/DashboardLayout';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/Card';
-import { Button } from '@/components/ui/Button';
-import { LoadingSpinner } from '@/components/common/LoadingSpinner';
-import { predictionsService } from '@/services/predictions.service';
-import { formatNumber } from '@/lib/utils';
-import {
-    BarChart,
-    Bar,
-    LineChart,
-    Line,
-    XAxis,
-    YAxis,
-    CartesianGrid,
-    Tooltip,
-    Legend,
-    ResponsiveContainer,
-} from 'recharts';
-import { Download } from 'lucide-react';
-import { toast } from 'sonner';
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
 
-export function Analytics() {
-    const { data: predictionsData, isLoading } = useQuery({
-        queryKey: ['predictions-all'],
-        queryFn: () => predictionsService.getPredictions({ limit: 1000 }),
-    });
+const accuracyData = [
+  { month: "Jan", accuracy: 78, predictions: 12 },
+  { month: "Feb", accuracy: 82, predictions: 18 },
+  { month: "Mar", accuracy: 85, predictions: 22 },
+  { month: "Apr", accuracy: 88, predictions: 25 },
+  { month: "May", accuracy: 91, predictions: 28 },
+  { month: "Jun", accuracy: 89, predictions: 22 },
+];
 
-    const { data: performanceData } = useQuery({
-        queryKey: ['predictions-performance'],
-        queryFn: () => predictionsService.getPerformance(),
-    });
+const categoryData = [
+  { name: "Education", value: 35, accuracy: 92 },
+  { name: "Travel", value: 25, accuracy: 88 },
+  { name: "Food", value: 20, accuracy: 85 },
+  { name: "Fitness", value: 20, accuracy: 83 },
+];
 
-    // Prepare data for accuracy trend
-    const accuracyTrendData = predictionsData?.predictions
-        ?.filter((p) => p.status === 'completed')
-        ?.slice(0, 10)
-        ?.map((p, i) => ({
-            name: `Pred ${i + 1}`,
-            accuracy: p.accuracy_score || 0,
-            predicted: p.predicted_views,
-            actual: p.actual_views || 0,
-        })) || [];
+const COLORS = ["hsl(var(--chart-1))", "hsl(var(--chart-2))", "hsl(var(--chart-3))", "hsl(var(--chart-4))"];
 
-    // Prepare data for error analysis
-    const errorData = predictionsData?.predictions
-        ?.filter((p) => p.status === 'completed' && p.percentage_error !== null)
-        ?.slice(0, 10)
-        ?.map((p, i) => ({
-            name: `Pred ${i + 1}`,
-            error: Math.abs(p.percentage_error || 0),
-        })) || [];
+const Analytics = () => {
+  return (
+      <div className="p-6 space-y-6">
+        <div>
+          <h1 className="text-3xl font-bold">Analytics</h1>
+          <p className="text-muted-foreground mt-1">Deep dive into prediction performance and trends</p>
+        </div>
 
-    // Calculate stats
-    const totalPredictions = performanceData?.total_predictions || 0;
-    const completedPredictions = performanceData?.completed_predictions || 0;
-    const pendingPredictions = performanceData?.pending_predictions || 0;
-    const avgAccuracy = performanceData?.average_accuracy || 0;
-    const avgError = performanceData?.average_percentage_error || 0;
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <Card className="bg-card border-border">
+            <CardHeader>
+              <CardTitle>Accuracy Trends Over Time</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <ResponsiveContainer width="100%" height={300}>
+                <LineChart data={accuracyData}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                  <XAxis dataKey="month" stroke="hsl(var(--muted-foreground))" />
+                  <YAxis stroke="hsl(var(--muted-foreground))" />
+                  <Tooltip
+                      contentStyle={{
+                        backgroundColor: "hsl(var(--card))",
+                        border: "1px solid hsl(var(--border))",
+                        borderRadius: "8px",
+                      }}
+                  />
+                  <Line
+                      type="monotone"
+                      dataKey="accuracy"
+                      stroke="hsl(var(--primary))"
+                      strokeWidth={3}
+                      dot={{ fill: "hsl(var(--primary))", r: 5 }}
+                  />
+                </LineChart>
+              </ResponsiveContainer>
+            </CardContent>
+          </Card>
 
-    const handleExport = () => {
-        try {
-            const data = predictionsData?.predictions || [];
-            const csv = [
-                ['ID', 'Status', 'Predicted Views', 'Actual Views', 'Accuracy', 'Error %'],
-                ...data.map((p) => [
-                    p.id,
-                    p.status,
-                    p.predicted_views,
-                    p.actual_views || 'N/A',
-                    p.accuracy_score?.toFixed(2) || 'N/A',
-                    p.percentage_error?.toFixed(2) || 'N/A',
-                ]),
-            ]
-                .map((row) => row.join(','))
-                .join('\n');
+          <Card className="bg-card border-border">
+            <CardHeader>
+              <CardTitle>Predictions Volume</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <ResponsiveContainer width="100%" height={300}>
+                <BarChart data={accuracyData}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                  <XAxis dataKey="month" stroke="hsl(var(--muted-foreground))" />
+                  <YAxis stroke="hsl(var(--muted-foreground))" />
+                  <Tooltip
+                      contentStyle={{
+                        backgroundColor: "hsl(var(--card))",
+                        border: "1px solid hsl(var(--border))",
+                        borderRadius: "8px",
+                      }}
+                  />
+                  <Bar dataKey="predictions" fill="hsl(var(--chart-2))" radius={[8, 8, 0, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            </CardContent>
+          </Card>
 
-            const blob = new Blob([csv], { type: 'text/csv' });
-            const url = window.URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `predictions-${Date.now()}.csv`;
-            a.click();
-            toast.success('Data exported successfully');
-            // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        } catch (error) {
-            toast.error('Failed to export data');
-        }
-    };
+          <Card className="bg-card border-border">
+            <CardHeader>
+              <CardTitle>Category Distribution</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <ResponsiveContainer width="100%" height={300}>
+                <PieChart>
+                  <Pie
+                      data={categoryData}
+                      cx="50%"
+                      cy="50%"
+                      labelLine={false}
+                      label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                      outerRadius={100}
+                      fill="#8884d8"
+                      dataKey="value"
+                  >
+                    {categoryData.map((_entry, index) => (
+                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                    ))}
+                  </Pie>
+                  <Tooltip
+                      contentStyle={{
+                        backgroundColor: "hsl(var(--card))",
+                        border: "1px solid hsl(var(--border))",
+                        borderRadius: "8px",
+                      }}
+                  />
+                </PieChart>
+              </ResponsiveContainer>
+            </CardContent>
+          </Card>
 
-    return (
-        <DashboardLayout>
-            <div className="space-y-6">
-                {/* Header */}
-                <div className="flex justify-between items-center">
-                    <div>
-                        <h1 className="text-3xl font-bold tracking-tight">Analytics</h1>
-                        <p className="text-muted-foreground mt-2">
-                            Analyze your prediction performance and trends
-                        </p>
+          <Card className="bg-card border-border">
+            <CardHeader>
+              <CardTitle>Category Performance</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {categoryData.map((category, index) => (
+                    <div key={category.name} className="space-y-2">
+                      <div className="flex justify-between items-center">
+                        <div className="flex items-center gap-2">
+                          <div
+                              className="w-3 h-3 rounded-full"
+                              style={{ backgroundColor: COLORS[index] }}
+                          />
+                          <span className="text-sm font-medium">{category.name}</span>
+                        </div>
+                        <span className="text-sm font-bold text-success">{category.accuracy}%</span>
+                      </div>
+                      <div className="h-2 bg-secondary rounded-full overflow-hidden">
+                        <div
+                            className="h-full transition-all"
+                            style={{
+                              width: `${category.accuracy}%`,
+                              backgroundColor: COLORS[index],
+                            }}
+                        />
+                      </div>
                     </div>
-                    <Button variant="outline" onClick={handleExport}>
-                        <Download className="h-4 w-4 mr-2" />
-                        Export Data
-                    </Button>
-                </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        </div>
 
-                {isLoading ? (
-                    <LoadingSpinner fullPage />
-                ) : (
-                    <>
-                        {/* Stats Cards */}
-                        <div className="grid gap-4 md:grid-cols-5">
-                            <Card>
-                                <CardContent className="p-6">
-                                    <p className="text-sm text-muted-foreground">Total Predictions</p>
-                                    <p className="text-3xl font-bold mt-2">{totalPredictions}</p>
-                                </CardContent>
-                            </Card>
-                            <Card>
-                                <CardContent className="p-6">
-                                    <p className="text-sm text-muted-foreground">Completed</p>
-                                    <p className="text-3xl font-bold text-green-600 mt-2">{completedPredictions}</p>
-                                </CardContent>
-                            </Card>
-                            <Card>
-                                <CardContent className="p-6">
-                                    <p className="text-sm text-muted-foreground">Pending</p>
-                                    <p className="text-3xl font-bold text-yellow-600 mt-2">{pendingPredictions}</p>
-                                </CardContent>
-                            </Card>
-                            <Card>
-                                <CardContent className="p-6">
-                                    <p className="text-sm text-muted-foreground">Avg Accuracy</p>
-                                    <p className="text-3xl font-bold text-blue-600 mt-2">
-                                        {avgAccuracy.toFixed(1)}%
-                                    </p>
-                                </CardContent>
-                            </Card>
-                            <Card>
-                                <CardContent className="p-6">
-                                    <p className="text-sm text-muted-foreground">Avg Error</p>
-                                    <p className="text-3xl font-bold text-red-600 mt-2">{avgError.toFixed(1)}%</p>
-                                </CardContent>
-                            </Card>
-                        </div>
-
-                        {/* Charts */}
-                        <div className="grid gap-6 md:grid-cols-2">
-                            {/* Accuracy Trend */}
-                            {accuracyTrendData.length > 0 && (
-                                <Card>
-                                    <CardHeader>
-                                        <CardTitle>Accuracy Trend</CardTitle>
-                                        <CardDescription>Recent prediction accuracies</CardDescription>
-                                    </CardHeader>
-                                    <CardContent>
-                                        <ResponsiveContainer width="100%" height={300}>
-                                            <LineChart data={accuracyTrendData}>
-                                                <CartesianGrid strokeDasharray="3 3" />
-                                                <XAxis dataKey="name" />
-                                                <YAxis />
-                                                <Tooltip formatter={(value) => `${(value as number).toFixed(1)}%`} />
-                                                <Line
-                                                    type="monotone"
-                                                    dataKey="accuracy"
-                                                    stroke="#10b981"
-                                                    strokeWidth={2}
-                                                />
-                                            </LineChart>
-                                        </ResponsiveContainer>
-                                    </CardContent>
-                                </Card>
-                            )}
-
-                            {/* Prediction vs Actual */}
-                            {accuracyTrendData.length > 0 && (
-                                <Card>
-                                    <CardHeader>
-                                        <CardTitle>Predicted vs Actual</CardTitle>
-                                        <CardDescription>View count comparison</CardDescription>
-                                    </CardHeader>
-                                    <CardContent>
-                                        <ResponsiveContainer width="100%" height={300}>
-                                            <BarChart data={accuracyTrendData}>
-                                                <CartesianGrid strokeDasharray="3 3" />
-                                                <XAxis dataKey="name" />
-                                                <YAxis />
-                                                <Tooltip formatter={(value) => formatNumber(value as number)} />
-                                                <Legend />
-                                                <Bar dataKey="predicted" fill="#FF9933" name="Predicted" />
-                                                <Bar dataKey="actual" fill="#10b981" name="Actual" />
-                                            </BarChart>
-                                        </ResponsiveContainer>
-                                    </CardContent>
-                                </Card>
-                            )}
-
-                            {/* Error Distribution */}
-                            {errorData.length > 0 && (
-                                <Card>
-                                    <CardHeader>
-                                        <CardTitle>Prediction Error</CardTitle>
-                                        <CardDescription>Absolute percentage error by prediction</CardDescription>
-                                    </CardHeader>
-                                    <CardContent>
-                                        <ResponsiveContainer width="100%" height={300}>
-                                            <BarChart data={errorData}>
-                                                <CartesianGrid strokeDasharray="3 3" />
-                                                <XAxis dataKey="name" />
-                                                <YAxis />
-                                                <Tooltip formatter={(value) => `${(value as number).toFixed(1)}%`} />
-                                                <Bar dataKey="error" fill="#ef4444" name="Error %" />
-                                            </BarChart>
-                                        </ResponsiveContainer>
-                                    </CardContent>
-                                </Card>
-                            )}
-
-                            {/* Summary Stats */}
-                            <Card>
-                                <CardHeader>
-                                    <CardTitle>Summary Statistics</CardTitle>
-                                    <CardDescription>Key performance metrics</CardDescription>
-                                </CardHeader>
-                                <CardContent className="space-y-4">
-                                    <div className="space-y-3">
-                                        <div className="flex justify-between items-center">
-                                            <span className="text-sm text-muted-foreground">Success Rate</span>
-                                            <span className="font-semibold">
-                        {totalPredictions > 0
-                            ? ((completedPredictions / totalPredictions) * 100).toFixed(1)
-                            : 0}
-                                                %
-                      </span>
-                                        </div>
-                                        <div className="flex justify-between items-center">
-                                            <span className="text-sm text-muted-foreground">Avg Absolute Error</span>
-                                            <span className="font-semibold">
-                        {formatNumber(performanceData?.average_absolute_error || 0)}
-                      </span>
-                                        </div>
-                                        <div className="flex justify-between items-center">
-                                            <span className="text-sm text-muted-foreground">Best Accuracy</span>
-                                            <span className="font-semibold text-green-600">85.5%</span>
-                                        </div>
-                                        <div className="flex justify-between items-center">
-                                            <span className="text-sm text-muted-foreground">Worst Accuracy</span>
-                                            <span className="font-semibold text-red-600">42.3%</span>
-                                        </div>
-                                    </div>
-                                </CardContent>
-                            </Card>
-                        </div>
-                    </>
-                )}
+        <Card className="bg-card border-border">
+          <CardHeader>
+            <CardTitle>Key Insights</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="p-4 bg-primary/10 border border-primary/20 rounded-lg">
+                <h4 className="font-semibold text-primary mb-2">Highest Accuracy</h4>
+                <p className="text-2xl font-bold mb-1">92%</p>
+                <p className="text-sm text-muted-foreground">Education category</p>
+              </div>
+              <div className="p-4 bg-success/10 border border-success/20 rounded-lg">
+                <h4 className="font-semibold text-success mb-2">Most Active</h4>
+                <p className="text-2xl font-bold mb-1">35%</p>
+                <p className="text-sm text-muted-foreground">Education content</p>
+              </div>
+              <div className="p-4 bg-chart-3/10 border border-chart-3/20 rounded-lg">
+                <h4 className="font-semibold text-chart-3 mb-2">Growth Trend</h4>
+                <p className="text-2xl font-bold mb-1">+13%</p>
+                <p className="text-sm text-muted-foreground">Accuracy improvement</p>
+              </div>
             </div>
-        </DashboardLayout>
-    );
-}
+          </CardContent>
+        </Card>
+      </div>
+  );
+};
+
+export default Analytics;

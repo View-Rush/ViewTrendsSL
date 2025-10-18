@@ -1,147 +1,163 @@
-import { useQuery } from '@tanstack/react-query';
-import { useState } from 'react';
-import { DashboardLayout } from '@/components/layout/DashboardLayout';
-import { Card, CardContent } from '@/components/ui/Card';
-import { Button } from '@/components/ui/Button';
-import { LoadingSpinner } from '@/components/common/LoadingSpinner';
-import { channelsService } from '@/services/channels.service';
-import { formatNumber } from '@/lib/utils';
-import { Users, Video, Eye, RefreshCw, Trash2, Plus } from 'lucide-react';
-import { toast } from 'sonner';
+import { Plus, RefreshCw, Users, Video, TrendingUp } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Progress } from "@/components/ui/progress";
+import { Badge } from "@/components/ui/badge";
+import { useEffect, useState } from "react";
+import { channelsService } from "@/services/channels.service";
+import type { ChannelResponse } from "@/api";
+import { toast } from "sonner";
 
-export function Channels() {
-    const [isRefreshing, setIsRefreshing] = useState(false);
+const Channels = () => {
+  const [channels, setChannels] = useState<ChannelResponse[]>([]);
+  const [loading, setLoading] = useState(true);
 
-    const { data: channelsData, isLoading, refetch } = useQuery({
-        queryKey: ['channels'],
-        queryFn: () => channelsService.getChannels({ limit: 100 }),
-    });
+  useEffect(() => {
+    loadChannels();
+  }, []);
 
-    const handleSync = async () => {
-        setIsRefreshing(true);
-        try {
-            // TODO: Implement channel sync logic
-            // await channelsService.syncChannel();
-            // toast.success('Channel synced successfully!');
-            // await refetch();
-            // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        } catch (error) {
-            toast.error('Failed to sync channel');
-        } finally {
-            setIsRefreshing(false);
-        }
-    };
+  const loadChannels = async () => {
+    try {
+      setLoading(true);
+      const data = await channelsService.getChannels({ limit: 100 });
+      setChannels(data.channels);
+    } catch (error: any) {
+      toast.error(error?.message || 'Failed to load channels');
+    } finally {
+      setLoading(false);
+    }
+  };
 
-    const handleDelete = async (id: number) => {
-        if (window.confirm('Are you sure you want to delete this channel?')) {
-            try {
-                await channelsService.deleteChannel(id);
-                toast.success('Channel deleted');
-                await refetch();
-                // eslint-disable-next-line @typescript-eslint/no-unused-vars
-            } catch (error) {
-                toast.error('Failed to delete channel');
-            }
-        }
-    };
-
+  if (loading) {
     return (
-        <DashboardLayout>
-            <div className="space-y-6">
-                {/* Header */}
-                <div className="flex justify-between items-center">
-                    <div>
-                        <h1 className="text-3xl font-bold tracking-tight">Channels</h1>
-                        <p className="text-muted-foreground mt-2">
-                            Manage your connected YouTube channels
-                        </p>
-                    </div>
-                    <Button variant="lankan" onClick={handleSync} disabled={isRefreshing}>
-                        <Plus className="h-4 w-4 mr-2" />
-                        {isRefreshing ? 'Syncing...' : 'Connect Channel'}
-                    </Button>
-                </div>
-
-                {/* Channels Grid */}
-                {isLoading ? (
-                    <LoadingSpinner fullPage />
-                ) : channelsData?.channels && channelsData.channels.length > 0 ? (
-                    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                        {channelsData.channels.map((channel) => (
-                            <Card key={channel.id} className="overflow-hidden hover:shadow-lg transition-shadow">
-                                {/* Thumbnail */}
-                                {channel.thumbnail_url && (
-                                    <div className="h-32 bg-gradient-to-br from-lankan-saffron/20 to-lankan-gold/20 overflow-hidden">
-                                        <img
-                                            src={channel.thumbnail_url}
-                                            alt={channel.channel_title}
-                                            className="w-full h-full object-cover"
-                                        />
-                                    </div>
-                                )}
-
-                                <CardContent className="p-6">
-                                    {/* Title */}
-                                    <h3 className="font-semibold text-lg truncate">{channel.channel_title}</h3>
-                                    {channel.custom_url && (
-                                        <p className="text-sm text-muted-foreground truncate">@{channel.custom_url}</p>
-                                    )}
-
-                                    {/* Stats */}
-                                    <div className="mt-4 space-y-2">
-                                        <div className="flex items-center gap-2 text-sm">
-                                            <Users className="h-4 w-4 text-lankan-saffron" />
-                                            <span>{formatNumber(channel.subscriber_count)} subscribers</span>
-                                        </div>
-                                        <div className="flex items-center gap-2 text-sm">
-                                            <Video className="h-4 w-4 text-lankan-gold" />
-                                            <span>{channel.video_count} videos</span>
-                                        </div>
-                                        <div className="flex items-center gap-2 text-sm">
-                                            <Eye className="h-4 w-4 text-blue-500" />
-                                            <span>{formatNumber(channel.view_count)} total views</span>
-                                        </div>
-                                    </div>
-
-                                    {/* Actions */}
-                                    <div className="mt-4 flex gap-2">
-                                        <Button
-                                            variant="outline"
-                                            size="sm"
-                                            className="flex-1"
-                                            onClick={() => handleSync()}
-                                        >
-                                            <RefreshCw className="h-4 w-4 mr-2" />
-                                            Sync
-                                        </Button>
-                                        <Button
-                                            variant="ghost"
-                                            size="sm"
-                                            onClick={() => handleDelete(channel.id)}
-                                        >
-                                            <Trash2 className="h-4 w-4 text-destructive" />
-                                        </Button>
-                                    </div>
-                                </CardContent>
-                            </Card>
-                        ))}
-                    </div>
-                ) : (
-                    <Card>
-                        <CardContent className="flex flex-col items-center justify-center py-12">
-                            <Users className="h-12 w-12 text-muted-foreground/50 mb-4" />
-                            <p className="text-lg font-medium mb-2">No channels connected yet</p>
-                            <p className="text-muted-foreground text-center mb-6">
-                                Connect your YouTube channel to start making predictions
-                            </p>
-                            <Button variant="lankan" onClick={handleSync}>
-                                <Plus className="h-4 w-4 mr-2" />
-                                Connect Your First Channel
-                            </Button>
-                        </CardContent>
-                    </Card>
-                )}
-            </div>
-        </DashboardLayout>
+        <div className="flex items-center justify-center h-screen">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+        </div>
     );
-}
+  }
+  return (
+      <div className="p-6 space-y-6">
+        <div className="flex justify-between items-center">
+          <div>
+            <h1 className="text-3xl font-bold">Channels</h1>
+            <p className="text-muted-foreground mt-1">Manage and track your YouTube channels</p>
+          </div>
+          <div className="flex gap-3">
+            <Button variant="outline" className="border-border">
+              <RefreshCw className="mr-2 h-4 w-4" />
+              Sync All
+            </Button>
+            <Button className="bg-primary hover:bg-primary/90">
+              <Plus className="mr-2 h-4 w-4" />
+              Add Channel
+            </Button>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <Card className="bg-card border-border">
+            <CardContent className="pt-6">
+              <div className="flex items-center gap-4">
+                <div className="p-3 rounded-lg bg-primary/20">
+                  <Users className="h-6 w-6 text-primary" />
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">Total Channels</p>
+                  <h3 className="text-2xl font-bold">{channels.length}</h3>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-card border-border">
+            <CardContent className="pt-6">
+              <div className="flex items-center gap-4">
+                <div className="p-3 rounded-lg bg-success/20">
+                  <Video className="h-6 w-6 text-success" />
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">Total Videos</p>
+                  <h3 className="text-2xl font-bold">
+                    {channels.reduce((sum, ch) => sum + (ch.video_count || 0), 0)}
+                  </h3>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-card border-border">
+            <CardContent className="pt-6">
+              <div className="flex items-center gap-4">
+                <div className="p-3 rounded-lg bg-chart-3/20">
+                  <TrendingUp className="h-6 w-6 text-chart-3" />
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">Avg Accuracy</p>
+                  <h3 className="text-2xl font-bold">
+                    {channels.length > 0
+                        ? (channels.reduce((sum, ch) => sum + (ch.avg_accuracy || 0), 0) / channels.length).toFixed(1)
+                        : 0}%
+                  </h3>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        <Card className="bg-card border-border">
+          <CardHeader>
+            <CardTitle>All Channels</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              {channels.map((channel) => (
+                  <div key={channel.id} className="p-4 border border-border rounded-lg hover:border-primary/50 transition-colors">
+                    <div className="flex items-center justify-between mb-4">
+                      <div className="flex items-center gap-4">
+                        <div className="w-12 h-12 rounded-full bg-gradient-to-br from-primary to-chart-5 flex items-center justify-center text-white font-bold">
+                          {channel.name.charAt(0)}
+                        </div>
+                        <div>
+                          <h3 className="font-semibold text-lg">{channel.name}</h3>
+                          <div className="flex items-center gap-4 mt-1">
+                            <span className="text-sm text-muted-foreground">{channel.subscriber_count || 0} subscribers</span>
+                            <span className="text-sm text-muted-foreground">{channel.video_count || 0} videos</span>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-4">
+                        <Badge variant={channel.is_connected ? "default" : "secondary"}>
+                          {channel.is_connected ? "connected" : "not connected"}
+                        </Badge>
+                        <Button variant="outline" size="sm" className="border-border">
+                          View Details
+                        </Button>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <div className="flex justify-between items-center mb-2">
+                          <span className="text-sm text-muted-foreground">Prediction Accuracy</span>
+                          <span className="text-sm font-bold text-success">{channel.avg_accuracy || 0}%</span>
+                        </div>
+                        <Progress value={channel.avg_accuracy || 0} className="h-2" />
+                      </div>
+                      <div>
+                        <div className="flex justify-between items-center mb-2">
+                          <span className="text-sm text-muted-foreground">Total Predictions</span>
+                          <span className="text-sm font-bold">{channel.prediction_count || 0}</span>
+                        </div>
+                        <Progress value={Math.min((channel.prediction_count || 0) * 2, 100)} className="h-2" />
+                      </div>
+                    </div>
+                  </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+  );
+};
+
+export default Channels;
