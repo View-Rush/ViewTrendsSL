@@ -1,91 +1,120 @@
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
-import { useEffect } from 'react';
-import { useAuthStore } from '@/store/authStore';
-import { Toaster } from 'sonner';
-import { Login } from '@/pages/Login';
-import { Register } from '@/pages/Register';
-import { Dashboard } from '@/pages/Dashboard';
-import { Channels } from '@/pages/Channels';
-import { Videos } from '@/pages/Videos';
-import { Predictions } from '@/pages/Predictions';
-import { CreatePrediction } from '@/pages/CreatePrediction';
-import { Analytics } from '@/pages/Analytics';
-import { LoadingSpinner } from '@/components/common/LoadingSpinner';
+import { Toaster } from "@/components/ui/toaster";
+import { Toaster as Sonner } from "@/components/ui/sonner";
+import { TooltipProvider } from "@/components/ui/tooltip";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { SidebarProvider } from "@/components/ui/sidebar";
+import { AppSidebar } from "@/components/layout/AppSidebar";
+import { TopBar } from "@/components/layout/TopBar";
+import { useAuthInit } from "@/hooks/useAuthInit";
+import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
+import Home from "./pages/Home";
+import Auth from "./pages/Auth";
+import Dashboard from "./pages/Dashboard";
+import Channels from "./pages/Channels";
+import VideoLibrary from "./pages/VideoLibrary";
+import Predictions from "./pages/Predictions";
+import Analytics from "./pages/Analytics";
+import Settings from "./pages/Settings";
+import NotFound from "./pages/NotFound";
 
-export function App() {
-    const { initialize, isLoading } = useAuthStore();
+const queryClient = new QueryClient();
 
-    useEffect(() => {
-        initialize();
-    }, [initialize]);
+const DashboardLayout = ({ children }: { children: React.ReactNode }) => (
+    <SidebarProvider>
+        <div className="min-h-screen flex w-full bg-background">
+            <AppSidebar />
+            <div className="flex-1 flex flex-col">
+                <TopBar />
+                <main className="flex-1">{children}</main>
+            </div>
+        </div>
+    </SidebarProvider>
+);
 
-    if (isLoading) {
-        return <LoadingSpinner fullPage />;
-    }
+const App = () => {
+    useAuthInit();
 
     return (
-        <>
-            <BrowserRouter>
-                <Routes>
-                    {/* Auth Routes */}
-                    <Route path="/login" element={<Login />} />
-                    <Route path="/register" element={<Register />} />
+        <QueryClientProvider client={queryClient}>
+            <TooltipProvider>
+                <Toaster />
+                <Sonner />
+                <BrowserRouter>
+                    <Routes>
+                        {/* Public Routes */}
+                        <Route path="/" element={<Home />} />
+                        <Route path="/auth" element={<Auth />} />
 
-                    {/* Protected Routes */}
-                    <Route
-                        path="/"
-                        element={
-                            // <ProtectedRoute>
-                                <Dashboard />
-                            // </ProtectedRoute>
-                        }
-                    />
-                    <Route
-                        path="/channels"
-                        element={
-                            // <ProtectedRoute>
-                                <Channels />
-                            // </ProtectedRoute>
-                        }
-                    />
-                    <Route
-                        path="/videos"
-                        element={
-                            // <ProtectedRoute>
-                                <Videos />
-                            // </ProtectedRoute>
-                        }
-                    />
-                    <Route
-                        path="/predictions"
-                        element={
-                            // <ProtectedRoute>
-                                <Predictions />
-                            // </ProtectedRoute>
-                        }
-                    />
-                    <Route
-                        path="/predictions/create"
-                        element={
-                            // <ProtectedRoute>
-                                <CreatePrediction />
-                            // </ProtectedRoute>
-                        }
-                    />
-                    <Route
-                        path="/analytics"
-                        element={
-                            // <ProtectedRoute>
-                                <Analytics />
-                            // </ProtectedRoute>
-                        }
-                    />
+                        {/* Protected Routes */}
+                        <Route
+                            path="/dashboard"
+                            element={
+                                <ProtectedRoute>
+                                    <DashboardLayout>
+                                        <Dashboard />
+                                    </DashboardLayout>
+                                </ProtectedRoute>
+                            }
+                        />
+                        <Route
+                            path="/channels"
+                            element={
+                                <ProtectedRoute>
+                                    <DashboardLayout>
+                                        <Channels />
+                                    </DashboardLayout>
+                                </ProtectedRoute>
+                            }
+                        />
+                        <Route
+                            path="/videos"
+                            element={
+                                <ProtectedRoute>
+                                    <DashboardLayout>
+                                        <VideoLibrary />
+                                    </DashboardLayout>
+                                </ProtectedRoute>
+                            }
+                        />
+                        <Route
+                            path="/predictions"
+                            element={
+                                <ProtectedRoute>
+                                    <DashboardLayout>
+                                        <Predictions />
+                                    </DashboardLayout>
+                                </ProtectedRoute>
+                            }
+                        />
+                        <Route
+                            path="/analytics"
+                            element={
+                                <ProtectedRoute>
+                                    <DashboardLayout>
+                                        <Analytics />
+                                    </DashboardLayout>
+                                </ProtectedRoute>
+                            }
+                        />
+                        <Route
+                            path="/settings"
+                            element={
+                                <ProtectedRoute>
+                                    <DashboardLayout>
+                                        <Settings />
+                                    </DashboardLayout>
+                                </ProtectedRoute>
+                            }
+                        />
 
-                    {/* Catch all */}
-                    <Route path="*" element={<Navigate to="/" replace />} />
-                </Routes>
-            </BrowserRouter>
-            <Toaster position="top-right" />
-        </>
+                        {/* 404 */}
+                        <Route path="*" element={<NotFound />} />
+                    </Routes>
+                </BrowserRouter>
+            </TooltipProvider>
+        </QueryClientProvider>
     );
-}
+};
+
+export default App;
