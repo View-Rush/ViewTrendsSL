@@ -2,8 +2,9 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
+import type { VideoSourceType } from './VideoSourceType';
 /**
- * Schema for creating a video (draft or uploaded).
+ * Schema for creating a video (draft, uploaded, or synthetic).
  */
 export type VideoCreate = {
     title: string;
@@ -25,5 +26,14 @@ export type VideoCreate = {
     privacy_status?: (string | null);
     is_uploaded?: boolean;
     is_draft?: boolean;
+    is_synthetic?: boolean;
+    /**
+     * Source of the video (youtube, manual, or test)
+     */
+    source_type?: VideoSourceType;
+    /**
+     * Additional metadata related to the video source
+     */
+    source_metadata?: (Record<string, any> | null);
 };
 

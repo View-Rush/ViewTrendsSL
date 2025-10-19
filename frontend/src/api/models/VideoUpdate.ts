@@ -2,6 +2,7 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
+import type { VideoSourceType } from './VideoSourceType';
 /**
  * Schema for updating a video.
  */
@@ -24,5 +25,8 @@ export type VideoUpdate = {
     privacy_status?: (string | null);
     is_uploaded?: (boolean | null);
     is_draft?: (boolean | null);
+    is_synthetic?: (boolean | null);
+    source_type?: (VideoSourceType | null);
+    source_metadata?: (Record<string, any> | null);
 };
 

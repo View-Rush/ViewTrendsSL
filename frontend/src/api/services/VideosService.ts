@@ -7,6 +7,7 @@ import type { ThumbnailAnalysisResponse } from '../models/ThumbnailAnalysisRespo
 import type { VideoCreate } from '../models/VideoCreate';
 import type { VideoListResponse } from '../models/VideoListResponse';
 import type { VideoResponse } from '../models/VideoResponse';
+import type { VideoSourceType } from '../models/VideoSourceType';
 import type { VideoUpdate } from '../models/VideoUpdate';
 import type { CancelablePromise } from '../core/CancelablePromise';
 import { OpenAPI } from '../core/OpenAPI';
@@ -14,7 +15,7 @@ import { request as __request } from '../core/request';
 export class VideosService {
     /**
      * Create Video
-     * Create a new video (draft or uploaded).
+     * Create a new video (draft, uploaded, or synthetic).
      * @param requestBody
      * @returns VideoResponse Successful Response
      * @throws ApiError
@@ -40,6 +41,8 @@ export class VideosService {
      * @param channelId
      * @param isDraft
      * @param isUploaded
+     * @param sourceType Filter by source type (youtube, manual, or test)
+     * @param isSynthetic Filter by whether the video is synthetic
      * @returns VideoListResponse Successful Response
      * @throws ApiError
      */
@@ -49,6 +52,8 @@ export class VideosService {
         channelId?: (number | null),
         isDraft?: (boolean | null),
         isUploaded?: (boolean | null),
+        sourceType?: (VideoSourceType | null),
+        isSynthetic?: (boolean | null),
     ): CancelablePromise<VideoListResponse> {
         return __request(OpenAPI, {
             method: 'GET',
@@ -59,6 +64,8 @@ export class VideosService {
                 'channel_id': channelId,
                 'is_draft': isDraft,
                 'is_uploaded': isUploaded,
+                'source_type': sourceType,
+                'is_synthetic': isSynthetic,
             },
             errors: {
                 422: `Validation Error`,
@@ -149,6 +156,27 @@ export class VideosService {
             url: '/api/v1/videos/analyze-thumbnail',
             body: requestBody,
             mediaType: 'application/json',
+            errors: {
+                422: `Validation Error`,
+            },
+        });
+    }
+    /**
+     * Import Youtube Video
+     * Import a video from YouTube into the user's library.
+     * @param inputValue YouTube video ID
+     * @returns VideoResponse Successful Response
+     * @throws ApiError
+     */
+    public static importYoutubeVideoApiV1VideosImportPost(
+        inputValue: string,
+    ): CancelablePromise<VideoResponse> {
+        return __request(OpenAPI, {
+            method: 'POST',
+            url: '/api/v1/videos/import',
+            query: {
+                'input_value': inputValue,
+            },
             errors: {
                 422: `Validation Error`,
             },

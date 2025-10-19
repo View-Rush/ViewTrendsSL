@@ -38,8 +38,6 @@ export default function CreatePredictionCard({ onCreated }: { onCreated?: () => 
                     <YoutubeLinkForm
                         onCreate={handleCreatePrediction}
                         creating={creating}
-                        thumbnailFile={thumbnailFile}
-                        setThumbnailFile={setThumbnailFile}
                     />
                 ) : (
                     <ManualMetadataForm

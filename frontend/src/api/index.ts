@@ -30,6 +30,7 @@ export type { ValidationError } from './models/ValidationError';
 export type { VideoCreate } from './models/VideoCreate';
 export type { VideoListResponse } from './models/VideoListResponse';
 export type { VideoResponse } from './models/VideoResponse';
+export { VideoSourceType } from './models/VideoSourceType';
 export type { VideoUpdate } from './models/VideoUpdate';
 
 export { AuthenticationService } from './services/AuthenticationService';

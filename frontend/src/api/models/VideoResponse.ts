@@ -2,6 +2,7 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
+import type { VideoSourceType } from './VideoSourceType';
 /**
  * Schema for video response.
  */
@@ -30,6 +31,9 @@ export type VideoResponse = {
     privacy_status: string;
     is_uploaded: boolean;
     is_draft: boolean;
+    is_synthetic: boolean;
+    source_type: VideoSourceType;
+    source_metadata: (Record<string, any> | null);
     created_at: string;
     updated_at: (string | null);
     last_synced_at: (string | null);

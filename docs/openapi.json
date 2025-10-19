@@ -572,7 +572,7 @@
           "videos"
         ],
         "summary": "Create Video",
-        "description": "Create a new video (draft or uploaded).",
+        "description": "Create a new video (draft, uploaded, or synthetic).",
         "operationId": "create_video_api_v1_videos__post",
         "security": [
           {
@@ -696,6 +696,42 @@
               ],
               "title": "Is Uploaded"
             }
+          },
+          {
+            "name": "source_type",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/VideoSourceType"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Filter by source type (youtube, manual, or test)",
+              "title": "Source Type"
+            },
+            "description": "Filter by source type (youtube, manual, or test)"
+          },
+          {
+            "name": "is_synthetic",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "boolean"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Filter by whether the video is synthetic",
+              "title": "Is Synthetic"
+            },
+            "description": "Filter by whether the video is synthetic"
           }
         ],
         "responses": {
@@ -914,6 +950,57 @@
             "OAuth2PasswordBearer": []
           }
         ]
+      }
+    },
+    "/api/v1/videos/import": {
+      "post": {
+        "tags": [
+          "videos",
+          "videos"
+        ],
+        "summary": "Import Youtube Video",
+        "description": "Import a video from YouTube into the user's library.",
+        "operationId": "import_youtube_video_api_v1_videos_import_post",
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "input_value",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "description": "YouTube video ID",
+              "title": "Input Value"
+            },
+            "description": "YouTube video ID"
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VideoResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
       }
     },
     "/api/v1/predictions/": {
@@ -2535,6 +2622,29 @@
             "type": "boolean",
             "title": "Is Draft",
             "default": true
+          },
+          "is_synthetic": {
+            "type": "boolean",
+            "title": "Is Synthetic",
+            "default": false
+          },
+          "source_type": {
+            "$ref": "#/components/schemas/VideoSourceType",
+            "description": "Source of the video (youtube, manual, or test)",
+            "default": "youtube"
+          },
+          "source_metadata": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source Metadata",
+            "description": "Additional metadata related to the video source"
           }
         },
         "type": "object",
@@ -2543,7 +2653,7 @@
           "channel_id"
         ],
         "title": "VideoCreate",
-        "description": "Schema for creating a video (draft or uploaded)."
+        "description": "Schema for creating a video (draft, uploaded, or synthetic)."
       },
       "VideoListResponse": {
         "properties": {
@@ -2741,6 +2851,25 @@
             "type": "boolean",
             "title": "Is Draft"
           },
+          "is_synthetic": {
+            "type": "boolean",
+            "title": "Is Synthetic"
+          },
+          "source_type": {
+            "$ref": "#/components/schemas/VideoSourceType"
+          },
+          "source_metadata": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source Metadata"
+          },
           "created_at": {
             "type": "string",
             "format": "date-time",
@@ -2793,12 +2922,24 @@
           "privacy_status",
           "is_uploaded",
           "is_draft",
+          "is_synthetic",
+          "source_type",
+          "source_metadata",
           "created_at",
           "updated_at",
           "last_synced_at"
         ],
         "title": "VideoResponse",
         "description": "Schema for video response."
+      },
+      "VideoSourceType": {
+        "type": "string",
+        "enum": [
+          "youtube",
+          "manual",
+          "test"
+        ],
+        "title": "VideoSourceType"
       },
       "VideoUpdate": {
         "properties": {
@@ -3009,6 +3150,39 @@
               }
             ],
             "title": "Is Draft"
+          },
+          "is_synthetic": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Is Synthetic"
+          },
+          "source_type": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/VideoSourceType"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "source_metadata": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source Metadata"
           }
         },
         "type": "object",
