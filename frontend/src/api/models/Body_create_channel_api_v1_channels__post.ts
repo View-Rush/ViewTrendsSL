@@ -2,25 +2,23 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-/**
- * Schema for creating a channel.
- */
-export type ChannelCreate = {
+export type Body_create_channel_api_v1_channels__post = {
     /**
-     * YouTube channel ID
+     * Type of channel: real or dummy
      */
-    channel_id: string;
-    /**
-     * Channel title
-     */
+    type?: string;
     channel_title: string;
     channel_description?: (string | null);
+    country?: (string | null);
+    /**
+     * YouTube channel ID (for real channels)
+     */
+    channel_id?: (string | null);
     custom_url?: (string | null);
     subscriber_count?: (number | null);
     video_count?: (number | null);
     view_count?: (number | null);
-    thumbnail_url?: (string | null);
-    country?: (string | null);
-    published_at?: (string | null);
+    likes?: (number | null);
+    thumbnail?: (Blob | null);
 };
 

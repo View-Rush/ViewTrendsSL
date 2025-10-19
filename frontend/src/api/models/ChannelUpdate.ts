@@ -12,8 +12,10 @@ export type ChannelUpdate = {
     subscriber_count?: (number | null);
     video_count?: (number | null);
     view_count?: (number | null);
+    likes?: (number | null);
     thumbnail_url?: (string | null);
     country?: (string | null);
     is_connected?: (boolean | null);
+    type?: ('real' | 'dummy' | null);
 };
 

@@ -7,10 +7,10 @@ export { CancelablePromise, CancelError } from './core/CancelablePromise';
 export { OpenAPI } from './core/OpenAPI';
 export type { OpenAPIConfig } from './core/OpenAPI';
 
+export type { Body_create_channel_api_v1_channels__post } from './models/Body_create_channel_api_v1_channels__post';
 export type { Body_login_api_v1_auth_login_post } from './models/Body_login_api_v1_auth_login_post';
-export type { ChannelCreate } from './models/ChannelCreate';
 export type { ChannelListResponse } from './models/ChannelListResponse';
-export type { ChannelResponse } from './models/ChannelResponse';
+export { ChannelResponse } from './models/ChannelResponse';
 export type { ChannelUpdate } from './models/ChannelUpdate';
 export type { GoogleAuthResponse } from './models/GoogleAuthResponse';
 export type { HTTPValidationError } from './models/HTTPValidationError';

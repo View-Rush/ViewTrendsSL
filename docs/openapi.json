@@ -299,9 +299,9 @@
         "requestBody": {
           "required": true,
           "content": {
-            "application/json": {
+            "multipart/form-data": {
               "schema": {
-                "$ref": "#/components/schemas/ChannelCreate"
+                "$ref": "#/components/schemas/Body_create_channel_api_v1_channels__post"
               }
             }
           }
@@ -375,6 +375,24 @@
               "default": false,
               "title": "Connected Only"
             }
+          },
+          {
+            "name": "type_filter",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Filter by channel type: real or dummy",
+              "title": "Type Filter"
+            },
+            "description": "Filter by channel type: real or dummy"
           }
         ],
         "responses": {
@@ -1226,6 +1244,130 @@
   },
   "components": {
     "schemas": {
+      "Body_create_channel_api_v1_channels__post": {
+        "properties": {
+          "type": {
+            "type": "string",
+            "title": "Type",
+            "description": "Type of channel: real or dummy",
+            "default": "real"
+          },
+          "channel_title": {
+            "type": "string",
+            "title": "Channel Title"
+          },
+          "channel_description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Channel Description"
+          },
+          "country": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Country"
+          },
+          "channel_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Channel Id",
+            "description": "YouTube channel ID (for real channels)"
+          },
+          "custom_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Custom Url"
+          },
+          "subscriber_count": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Subscriber Count",
+            "default": 0
+          },
+          "video_count": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Video Count",
+            "default": 0
+          },
+          "view_count": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "View Count",
+            "default": 0
+          },
+          "likes": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Likes",
+            "default": 0
+          },
+          "thumbnail": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "binary"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Thumbnail"
+          }
+        },
+        "type": "object",
+        "required": [
+          "channel_title"
+        ],
+        "title": "Body_create_channel_api_v1_channels__post"
+      },
       "Body_login_api_v1_auth_login_post": {
         "properties": {
           "grant_type": {
@@ -1285,119 +1427,6 @@
         ],
         "title": "Body_login_api_v1_auth_login_post"
       },
-      "ChannelCreate": {
-        "properties": {
-          "channel_id": {
-            "type": "string",
-            "title": "Channel Id",
-            "description": "YouTube channel ID"
-          },
-          "channel_title": {
-            "type": "string",
-            "title": "Channel Title",
-            "description": "Channel title"
-          },
-          "channel_description": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Channel Description"
-          },
-          "custom_url": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Custom Url"
-          },
-          "subscriber_count": {
-            "anyOf": [
-              {
-                "type": "integer"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Subscriber Count",
-            "default": 0
-          },
-          "video_count": {
-            "anyOf": [
-              {
-                "type": "integer"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Video Count",
-            "default": 0
-          },
-          "view_count": {
-            "anyOf": [
-              {
-                "type": "integer"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "View Count",
-            "default": 0
-          },
-          "thumbnail_url": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Thumbnail Url"
-          },
-          "country": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Country"
-          },
-          "published_at": {
-            "anyOf": [
-              {
-                "type": "string",
-                "format": "date-time"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Published At"
-          }
-        },
-        "type": "object",
-        "required": [
-          "channel_id",
-          "channel_title"
-        ],
-        "title": "ChannelCreate",
-        "description": "Schema for creating a channel."
-      },
       "ChannelListResponse": {
         "properties": {
           "channels": {
@@ -1418,15 +1447,10 @@
           "total"
         ],
         "title": "ChannelListResponse",
-        "description": "Schema for list of channels."
+        "description": "Schema for a paginated list of channels."
       },
       "ChannelResponse": {
         "properties": {
-          "channel_id": {
-            "type": "string",
-            "title": "Channel Id",
-            "description": "YouTube channel ID"
-          },
           "channel_title": {
             "type": "string",
             "title": "Channel Title",
@@ -1441,7 +1465,74 @@
                 "type": "null"
               }
             ],
-            "title": "Channel Description"
+            "title": "Channel Description",
+            "description": "Channel description"
+          },
+          "thumbnail_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Thumbnail Url",
+            "description": "Thumbnail image URL"
+          },
+          "country": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Country",
+            "description": "Country of the channel"
+          },
+          "published_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Published At",
+            "description": "Channel creation date"
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "real",
+              "dummy"
+            ],
+            "title": "Type",
+            "description": "Type of channel: real or dummy",
+            "default": "real"
+          },
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "user_id": {
+            "type": "integer",
+            "title": "User Id"
+          },
+          "channel_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Channel Id"
           },
           "custom_url": {
             "anyOf": [
@@ -1453,14 +1544,6 @@
               }
             ],
             "title": "Custom Url"
-          },
-          "id": {
-            "type": "integer",
-            "title": "Id"
-          },
-          "user_id": {
-            "type": "integer",
-            "title": "User Id"
           },
           "subscriber_count": {
             "type": "integer",
@@ -1474,39 +1557,9 @@
             "type": "integer",
             "title": "View Count"
           },
-          "thumbnail_url": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Thumbnail Url"
-          },
-          "country": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Country"
-          },
-          "published_at": {
-            "anyOf": [
-              {
-                "type": "string",
-                "format": "date-time"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Published At"
+          "likes": {
+            "type": "integer",
+            "title": "Likes"
           },
           "is_connected": {
             "type": "boolean",
@@ -1544,23 +1597,22 @@
         },
         "type": "object",
         "required": [
-          "channel_id",
           "channel_title",
           "id",
           "user_id",
+          "channel_id",
+          "custom_url",
           "subscriber_count",
           "video_count",
           "view_count",
-          "thumbnail_url",
-          "country",
-          "published_at",
+          "likes",
           "is_connected",
           "last_synced_at",
           "created_at",
           "updated_at"
         ],
         "title": "ChannelResponse",
-        "description": "Schema for channel response."
+        "description": "Schema returned in API responses."
       },
       "ChannelUpdate": {
         "properties": {
@@ -1630,6 +1682,17 @@
             ],
             "title": "View Count"
           },
+          "likes": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Likes"
+          },
           "thumbnail_url": {
             "anyOf": [
               {
@@ -1662,6 +1725,21 @@
               }
             ],
             "title": "Is Connected"
+          },
+          "type": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "real",
+                  "dummy"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Type"
           }
         },
         "type": "object",

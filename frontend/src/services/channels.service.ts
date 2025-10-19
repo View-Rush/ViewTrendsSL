@@ -1,35 +1,40 @@
-import {type ChannelResponse, ChannelsService, type ChannelUpdate} from '@/api';
-import type { ChannelListResponse, ChannelCreate } from '@/types';
+import {
+    ChannelsService,
+    type ChannelResponse,
+    type ChannelListResponse,
+    type ChannelUpdate,
+    type Body_create_channel_api_v1_channels__post,
+} from '@/api';
 
 export const channelsService = {
     async getChannels(params?: {
         skip?: number;
         limit?: number;
         connected_only?: boolean;
+        type_filter?: string | null;
     }): Promise<ChannelListResponse> {
-        return ChannelsService.listChannelsApiV1ChannelsGet({
-            skip: params?.skip,
-            limit: params?.limit,
-            connectedOnly: params?.connected_only ?? false,
-        });
+        return ChannelsService.listChannelsApiV1ChannelsGet(
+            params?.skip,
+            params?.limit ?? 100,
+            params?.connected_only ?? false,
+            params?.type_filter
+        );
     },
 
     async getChannel(id: number): Promise<ChannelResponse> {
-        return  ChannelsService.getChannelApiV1ChannelsChannelIdGet({ channelId: id });
+        return ChannelsService.getChannelApiV1ChannelsChannelIdGet(id);
     },
 
-    async createChannel(data: ChannelCreate): Promise<ChannelResponse> {
-        return  ChannelsService.createChannelApiV1ChannelsPost({ requestBody: data });
+    async createChannel(formData: Body_create_channel_api_v1_channels__post): Promise<ChannelResponse> {
+        // The generated client expects a FormData object
+        return ChannelsService.createChannelApiV1ChannelsPost(formData);
     },
 
     async updateChannel(id: number, data: ChannelUpdate): Promise<ChannelResponse> {
-        return ChannelsService.updateChannelApiV1ChannelsChannelIdPatch({
-            channelId: id,
-            requestBody: data,
-        });
+        return ChannelsService.updateChannelApiV1ChannelsChannelIdPatch(id, data);
     },
 
     async deleteChannel(id: number): Promise<void> {
-        await ChannelsService.deleteChannelApiV1ChannelsChannelIdDelete({ channelId: id });
+        return ChannelsService.deleteChannelApiV1ChannelsChannelIdDelete(id);
     },
 };

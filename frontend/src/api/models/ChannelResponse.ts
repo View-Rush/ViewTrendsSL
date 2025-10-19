@@ -3,30 +3,53 @@
 /* tslint:disable */
 /* eslint-disable */
 /**
- * Schema for channel response.
+ * Schema returned in API responses.
  */
 export type ChannelResponse = {
-    /**
-     * YouTube channel ID
-     */
-    channel_id: string;
     /**
      * Channel title
      */
     channel_title: string;
+    /**
+     * Channel description
+     */
     channel_description?: (string | null);
-    custom_url?: (string | null);
+    /**
+     * Thumbnail image URL
+     */
+    thumbnail_url?: (string | null);
+    /**
+     * Country of the channel
+     */
+    country?: (string | null);
+    /**
+     * Channel creation date
+     */
+    published_at?: (string | null);
+    /**
+     * Type of channel: real or dummy
+     */
+    type?: ChannelResponse.type;
     id: number;
     user_id: number;
+    channel_id: (string | null);
+    custom_url: (string | null);
     subscriber_count: number;
     video_count: number;
     view_count: number;
-    thumbnail_url: (string | null);
-    country: (string | null);
-    published_at: (string | null);
+    likes: number;
     is_connected: boolean;
     last_synced_at: (string | null);
     created_at: string;
     updated_at: (string | null);
 };
+export namespace ChannelResponse {
+    /**
+     * Type of channel: real or dummy
+     */
+    export enum type {
+        REAL = 'real',
+        DUMMY = 'dummy',
+    }
+}
 

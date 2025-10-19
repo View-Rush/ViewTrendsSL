@@ -4,7 +4,7 @@
 /* eslint-disable */
 import type { ChannelResponse } from './ChannelResponse';
 /**
- * Schema for list of channels.
+ * Schema for a paginated list of channels.
  */
 export type ChannelListResponse = {
     channels: Array<ChannelResponse>;

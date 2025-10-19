@@ -1,7 +1,6 @@
 // Import from your OpenAPI generated models
 export type {
     ChannelResponse as Channel,
-    ChannelCreate,
     ChannelUpdate,
     ChannelListResponse,
     VideoResponse as Video,
@@ -48,3 +47,5 @@ export interface DashboardStats {
     pending_predictions: number;
     completed_predictions: number;
 }
+
+export * from './predictions';

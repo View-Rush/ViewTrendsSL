@@ -2,7 +2,7 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-import type { ChannelCreate } from '../models/ChannelCreate';
+import type { Body_create_channel_api_v1_channels__post } from '../models/Body_create_channel_api_v1_channels__post';
 import type { ChannelListResponse } from '../models/ChannelListResponse';
 import type { ChannelResponse } from '../models/ChannelResponse';
 import type { ChannelUpdate } from '../models/ChannelUpdate';
@@ -13,18 +13,18 @@ export class ChannelsService {
     /**
      * Create Channel
      * Create a new channel or update if exists.
-     * @param requestBody
+     * @param formData
      * @returns ChannelResponse Successful Response
      * @throws ApiError
      */
     public static createChannelApiV1ChannelsPost(
-        requestBody: ChannelCreate,
+        formData: Body_create_channel_api_v1_channels__post,
     ): CancelablePromise<ChannelResponse> {
         return __request(OpenAPI, {
             method: 'POST',
             url: '/api/v1/channels/',
-            body: requestBody,
-            mediaType: 'application/json',
+            formData: formData,
+            mediaType: 'multipart/form-data',
             errors: {
                 422: `Validation Error`,
             },
@@ -36,6 +36,7 @@ export class ChannelsService {
      * @param skip
      * @param limit
      * @param connectedOnly
+     * @param typeFilter Filter by channel type: real or dummy
      * @returns ChannelListResponse Successful Response
      * @throws ApiError
      */
@@ -43,6 +44,7 @@ export class ChannelsService {
         skip?: number,
         limit: number = 100,
         connectedOnly: boolean = false,
+        typeFilter?: (string | null),
     ): CancelablePromise<ChannelListResponse> {
         return __request(OpenAPI, {
             method: 'GET',
@@ -51,6 +53,7 @@ export class ChannelsService {
                 'skip': skip,
                 'limit': limit,
                 'connected_only': connectedOnly,
+                'type_filter': typeFilter,
             },
             errors: {
                 422: `Validation Error`,

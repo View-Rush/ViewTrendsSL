@@ -1,13 +1,12 @@
 import { Plus, TrendingUp, Target, CheckCircle } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { useEffect, useState } from "react";
 import { predictionsService } from "@/services/predictions.service";
 import type { PredictionResponse } from "@/api";
 import { toast } from "sonner";
+import CreatePredictionCard from "@/components/predictions/CreatePredictionCard.tsx";
 
 const Predictions = () => {
   const [predictions, setPredictions] = useState<PredictionResponse[]>([]);
@@ -106,36 +105,7 @@ const Predictions = () => {
           </Card>
         </div>
 
-        <Card className="bg-card border-border">
-          <CardHeader>
-            <CardTitle>Create New Prediction</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="space-y-2">
-                <Label htmlFor="video-url">YouTube Video URL</Label>
-                <Input
-                    id="video-url"
-                    placeholder="https://youtube.com/watch?v=..."
-                    className="bg-secondary border-border"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="channel">Channel</Label>
-                <Input
-                    id="channel"
-                    placeholder="Select or enter channel name"
-                    className="bg-secondary border-border"
-                />
-              </div>
-              <div className="md:col-span-2">
-                <Button className="bg-primary hover:bg-primary/90">
-                  Generate Prediction
-                </Button>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+        <CreatePredictionCard />
 
         <Card className="bg-card border-border">
           <CardHeader>
