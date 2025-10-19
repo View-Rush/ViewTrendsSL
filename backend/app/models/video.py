@@ -21,7 +21,7 @@ class Video(Base):
 
     # Source
     source_type = Column(
-        Enum(VideoSourceType, name="video_source_type"),
+        Enum(VideoSourceType, name="video_source_type", native_enum=False),
         default=VideoSourceType.YOUTUBE,
         nullable=False
     )

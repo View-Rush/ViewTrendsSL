@@ -25,7 +25,15 @@ def upgrade() -> None:
     video_source_type_enum = sa.Enum('youtube', 'manual', 'test', name='video_source_type')
     video_source_type_enum.create(op.get_bind(), checkfirst=True)
 
-    op.add_column('videos', sa.Column('source_type', sa.Enum('YOUTUBE', 'MANUAL', 'TEST', name='video_source_type'), nullable=False, server_default='youtube'))
+    op.add_column(
+        'videos',
+        sa.Column(
+            'source_type',
+            sa.Enum('youtube', 'manual', 'test', name='video_source_type'),
+            nullable=False,
+            server_default='youtube'
+        )
+    )
     op.add_column('videos', sa.Column('source_metadata', sa.JSON(), nullable=True))
     op.add_column('videos', sa.Column('is_synthetic', sa.Boolean(), nullable=True))
     # ### end Alembic commands ###

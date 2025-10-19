@@ -9,6 +9,8 @@ from app.models import Video, Channel, VideoSourceType
 from app.schemas import VideoCreate, VideoUpdate
 from app.core.exceptions import VideoNotFoundException, ForbiddenException
 from app.services.youtube_service import YouTubeService
+from app.schemas import ChannelCreate
+from app.services import ChannelService
 
 
 class VideoService:
@@ -171,27 +173,51 @@ class VideoService:
 
     @staticmethod
     def import_from_youtube(db: Session, input_value: str, user_id: int) -> Video:
-        """Import a video from YouTube by URL or video ID, and store in the database."""
-        # Extract video ID from URL or direct input
+        """Import a video from YouTube by URL or video ID, and store it in the database."""
         youtube_video_id = VideoService._extract_video_id(input_value)
         if not youtube_video_id:
             raise ValueError("Invalid YouTube URL or video ID")
 
-        # Fetch data from YouTube API
         yt = YouTubeService()
         video_data = yt.get_video_details(youtube_video_id)
         if not video_data:
             raise VideoNotFoundException("YouTube video not found")
 
-        # Add YouTube-specific defaults
+        # Extract the channel ID from the video data
+        youtube_channel_id = video_data.get("channel_id")
+        if not youtube_channel_id:
+            raise ValueError("Missing channel ID in YouTube video data")
+
+        # Try to get existing channel for this user
+        channel = ChannelService.get_channel_by_youtube_id(db, youtube_channel_id, user_id)
+
+        # If not found, fetch and create it using ChannelService
+        if not channel:
+            channel_data = yt.get_channel_details(youtube_channel_id)
+            if not channel_data:
+                raise VideoNotFoundException("Channel not found in YouTube API")
+
+            channel_create = ChannelCreate(
+                channel_id=channel_data["channel_id"],
+                channel_title=channel_data["name"],
+                channel_description=channel_data.get("description"),
+                country=channel_data.get("country"),
+                published_at=channel_data.get("published_at"),
+                subscriber_count=channel_data.get("subscriber_count", 0),
+                video_count=channel_data.get("video_count", 0),
+                view_count=channel_data.get("view_count", 0),
+                thumbnail_url=None,  # Add if mapper supports it later
+                type="real",
+                is_connected=True,
+            )
+            channel = ChannelService.create_channel(db, channel_create, user_id)
+
+        # Add YouTube video defaults
         video_data["is_uploaded"] = True
         video_data["is_draft"] = False
-        video_data["source_type"] = "youtube"
+        video_data["source_type"] = VideoSourceType.YOUTUBE
 
-        # Find a default or user-selected channel
-        channel = db.query(Channel).filter(Channel.user_id == user_id).first()
-        if not channel:
-            raise ForbiddenException("No linked channel found for user")
+        video_data.pop("channel_id", None)
 
         # Create the video record
         video = Video(
@@ -204,18 +230,15 @@ class VideoService:
         db.refresh(video)
         return video
 
-    # Helper: Extract video ID from URL or direct input
     @staticmethod
-    def _extract_video_id(value: str) -> str | None:
-        """Extract YouTube video ID from full URL or return it directly if already an ID."""
-        # Direct video ID (11-character YouTube ID pattern)
+    def _extract_video_id(value: str) -> Optional[str]:
+        """Extract YouTube video ID from a URL or return it directly if already an ID."""
         if re.fullmatch(r"^[a-zA-Z0-9_-]{11}$", value):
             return value
 
-        # Try to extract from YouTube URL patterns
         patterns = [
-            r"(?:v=|\/)([0-9A-Za-z_-]{11}).*",  # regular URL
-            r"youtu\.be\/([0-9A-Za-z_-]{11})",  # short link
+            r"(?:v=|\/)([0-9A-Za-z_-]{11}).*",
+            r"youtu\.be\/([0-9A-Za-z_-]{11})",
         ]
         for pattern in patterns:
             match = re.search(pattern, value)

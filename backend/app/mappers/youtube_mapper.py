@@ -7,20 +7,17 @@ def map_youtube_video(item: dict) -> dict:
     stats = item.get("statistics", {})
     content = item.get("contentDetails", {})
 
-    # Handle ISO 8601 timestamp -> Python datetime
     published_at_str = snippet.get("publishedAt")
     published_at = None
     if published_at_str:
         try:
-            # YouTube returns e.g. "2021-01-01T00:00:00Z"
-            published_at = datetime.fromisoformat(
-                published_at_str.replace("Z", "+00:00")
-            )
+            published_at = datetime.fromisoformat(published_at_str.replace("Z", "+00:00"))
         except Exception:
             published_at = None
 
     return {
         "video_id": item.get("id"),
+        "channel_id": snippet.get("channelId"),
         "title": snippet.get("title"),
         "description": snippet.get("description"),
         "thumbnail_url": snippet.get("thumbnails", {}).get("high", {}).get("url"),
@@ -28,7 +25,7 @@ def map_youtube_video(item: dict) -> dict:
         "view_count": int(stats.get("viewCount", 0)),
         "like_count": int(stats.get("likeCount", 0)),
         "comment_count": int(stats.get("commentCount", 0)),
-        "published_at": published_at,  # ✅ datetime object
+        "published_at": published_at,
         "category_id": snippet.get("categoryId"),
         "tags": snippet.get("tags", []),
     }
