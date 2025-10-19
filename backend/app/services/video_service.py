@@ -1,9 +1,9 @@
 """Video service for business logic."""
 from sqlalchemy.orm import Session
-from sqlalchemy import and_, or_
+from sqlalchemy import and_
 from typing import Optional
 from datetime import datetime
-from app.models import Video, Channel
+from app.models import Video, Channel, VideoSourceType
 from app.schemas import VideoCreate, VideoUpdate
 from app.core.exceptions import VideoNotFoundException, ForbiddenException
 
@@ -27,16 +27,23 @@ class VideoService:
 
         # Check if video already exists (by YouTube video_id)
         if video_data.video_id:
-            existing = db.query(Video).filter(
-                Video.video_id == video_data.video_id
-            ).first()
+            existing = db.query(Video).filter(Video.video_id == video_data.video_id).first()
             if existing:
                 raise ValueError("Video with this YouTube ID already exists")
 
+        # Handle source-related defaults
+        source_type = video_data.source_type or VideoSourceType.YOUTUBE
+        source_metadata = video_data.source_metadata
+        is_synthetic = video_data.is_synthetic or False
+
         video = Video(
             user_id=user_id,
-            **video_data.model_dump()
+            source_type=source_type,
+            source_metadata=source_metadata,
+            is_synthetic=is_synthetic,
+            **video_data.model_dump(exclude={"source_type", "source_metadata", "is_synthetic"})
         )
+
         db.add(video)
         db.commit()
         db.refresh(video)
@@ -64,41 +71,40 @@ class VideoService:
 
     @staticmethod
     def get_user_videos(
-            db: Session,
-            user_id: int,
-            skip: int = 0,
-            limit: int = 100,
-            channel_id: Optional[int] = None,
-            is_draft: Optional[bool] = None,
-            is_uploaded: Optional[bool] = None
+        db: Session,
+        user_id: int,
+        skip: int = 0,
+        limit: int = 100,
+        channel_id: Optional[int] = None,
+        is_draft: Optional[bool] = None,
+        is_uploaded: Optional[bool] = None,
+        source_type: Optional[VideoSourceType] = None,
+        is_synthetic: Optional[bool] = None
     ) -> tuple[list[Video], int]:
         """Get all videos for a user with optional filters."""
         query = db.query(Video).filter(Video.user_id == user_id)
 
         if channel_id is not None:
             query = query.filter(Video.channel_id == channel_id)
-
         if is_draft is not None:
             query = query.filter(Video.is_draft == is_draft)
-
         if is_uploaded is not None:
             query = query.filter(Video.is_uploaded == is_uploaded)
+        if source_type is not None:
+            query = query.filter(Video.source_type == source_type)
+        if is_synthetic is not None:
+            query = query.filter(Video.is_synthetic == is_synthetic)
 
         total = query.count()
         videos = query.order_by(Video.created_at.desc()).offset(skip).limit(limit).all()
         return videos, total
 
     @staticmethod
-    def update_video(
-            db: Session,
-            video_id: int,
-            video_data: VideoUpdate,
-            user_id: int
-    ) -> Video:
+    def update_video(db: Session, video_id: int, video_data: VideoUpdate, user_id: int) -> Video:
         """Update a video."""
         video = VideoService.get_video(db, video_id, user_id)
-
         update_data = video_data.model_dump(exclude_unset=True)
+
         for field, value in update_data.items():
             setattr(video, field, value)
 
@@ -116,11 +122,11 @@ class VideoService:
 
     @staticmethod
     def mark_as_uploaded(
-            db: Session,
-            video_id: int,
-            user_id: int,
-            youtube_video_id: str,
-            published_at: datetime
+        db: Session,
+        video_id: int,
+        user_id: int,
+        youtube_video_id: str,
+        published_at: datetime
     ) -> Video:
         """Mark a draft video as uploaded."""
         video = VideoService.get_video(db, video_id, user_id)
@@ -137,15 +143,19 @@ class VideoService:
 
     @staticmethod
     def sync_video_stats(
-            db: Session,
-            video_id: int,
-            user_id: int,
-            view_count: int,
-            like_count: int,
-            comment_count: int
+        db: Session,
+        video_id: int,
+        user_id: int,
+        view_count: int,
+        like_count: int,
+        comment_count: int
     ) -> Video:
         """Sync video statistics from YouTube API."""
         video = VideoService.get_video(db, video_id, user_id)
+
+        # Skip syncing for non-YouTube or synthetic videos
+        if video.source_type != VideoSourceType.YOUTUBE or video.is_synthetic:
+            raise ForbiddenException("Cannot sync non-YouTube or synthetic videos")
 
         video.view_count = view_count
         video.like_count = like_count

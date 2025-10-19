@@ -2,6 +2,7 @@
 from pydantic import BaseModel, Field
 from datetime import datetime
 from typing import Optional, Any
+from app.models import VideoSourceType
 
 
 class VideoBase(BaseModel):
@@ -12,7 +13,7 @@ class VideoBase(BaseModel):
 
 
 class VideoCreate(VideoBase):
-    """Schema for creating a video (draft or uploaded)."""
+    """Schema for creating a video (draft, uploaded, or synthetic)."""
     video_id: Optional[str] = None  # YouTube video ID if already uploaded
     thumbnail_url: Optional[str] = None
     thumbnail_analysis: Optional[dict[str, Any]] = None
@@ -26,6 +27,15 @@ class VideoCreate(VideoBase):
     privacy_status: Optional[str] = "private"
     is_uploaded: bool = False
     is_draft: bool = True
+    is_synthetic: bool = False  # For model-generated or test data
+    source_type: VideoSourceType = Field(
+        default=VideoSourceType.YOUTUBE,
+        description="Source of the video (youtube, manual, or test)"
+    )
+    source_metadata: Optional[dict[str, Any]] = Field(
+        default=None,
+        description="Additional metadata related to the video source"
+    )
 
 
 class VideoUpdate(BaseModel):
@@ -48,6 +58,9 @@ class VideoUpdate(BaseModel):
     privacy_status: Optional[str] = None
     is_uploaded: Optional[bool] = None
     is_draft: Optional[bool] = None
+    is_synthetic: Optional[bool] = None
+    source_type: Optional[VideoSourceType] = None
+    source_metadata: Optional[dict[str, Any]] = None
 
 
 class VideoInDB(VideoBase):
@@ -70,6 +83,9 @@ class VideoInDB(VideoBase):
     privacy_status: str
     is_uploaded: bool
     is_draft: bool
+    is_synthetic: bool
+    source_type: VideoSourceType
+    source_metadata: Optional[dict[str, Any]]
     created_at: datetime
     updated_at: Optional[datetime]
     last_synced_at: Optional[datetime]

@@ -4,7 +4,7 @@ from sqlalchemy.orm import Session
 from typing import Optional
 
 from app.dependencies import get_db, get_current_active_user
-from app.models import User
+from app.models import User, VideoSourceType
 from app.schemas import (
     VideoCreate,
     VideoUpdate,
@@ -24,7 +24,7 @@ def create_video(
         db: Session = Depends(get_db),
         current_user: User = Depends(get_current_active_user),
 ):
-    """Create a new video (draft or uploaded)."""
+    """Create a new video (draft, uploaded, or synthetic)."""
     video = VideoService.create_video(db, video_data, current_user.id)
     return video
 
@@ -36,12 +36,26 @@ def list_videos(
         channel_id: Optional[int] = Query(None),
         is_draft: Optional[bool] = Query(None),
         is_uploaded: Optional[bool] = Query(None),
+        source_type: Optional[VideoSourceType] = Query(
+            None, description="Filter by source type (youtube, manual, or test)"
+        ),
+        is_synthetic: Optional[bool] = Query(
+            None, description="Filter by whether the video is synthetic"
+        ),
         db: Session = Depends(get_db),
         current_user: User = Depends(get_current_active_user),
 ):
     """Get all videos for the current user with optional filters."""
     videos, total = VideoService.get_user_videos(
-        db, current_user.id, skip, limit, channel_id, is_draft, is_uploaded
+        db=db,
+        user_id=current_user.id,
+        skip=skip,
+        limit=limit,
+        channel_id=channel_id,
+        is_draft=is_draft,
+        is_uploaded=is_uploaded,
+        source_type=source_type,
+        is_synthetic=is_synthetic,
     )
     return VideoListResponse(videos=videos, total=total)
 
