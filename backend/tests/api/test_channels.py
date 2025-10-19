@@ -2,24 +2,27 @@
 import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy.orm import Session
+from io import BytesIO
 
 from app.models import User, Channel
 
 
-def test_create_channel(authenticated_client: TestClient, auth_headers: dict, db: Session):
-    """Test creating a new channel."""
+def test_create_real_channel(authenticated_client: TestClient, auth_headers: dict, db: Session):
+    """Test creating a new real YouTube channel."""
     channel_data = {
+        "type": "real",
         "channel_id": "UC_test_channel_id",
         "channel_title": "Test Channel",
         "channel_description": "Test channel description",
         "subscriber_count": 10000,
         "video_count": 50,
         "view_count": 500000,
+        "likes": 25000
     }
 
     response = authenticated_client.post(
         "/api/v1/channels/",
-        json=channel_data,
+        data=channel_data,
         headers=auth_headers
     )
 
@@ -27,7 +30,36 @@ def test_create_channel(authenticated_client: TestClient, auth_headers: dict, db
     data = response.json()
     assert data["channel_id"] == channel_data["channel_id"]
     assert data["channel_title"] == channel_data["channel_title"]
-    assert data["subscriber_count"] == channel_data["subscriber_count"]
+    assert data["type"] == "real"
+    assert data["likes"] == channel_data["likes"]
+
+
+def test_create_dummy_channel_with_thumbnail(authenticated_client: TestClient, auth_headers: dict, db: Session):
+    """Test creating a dummy channel with uploaded thumbnail."""
+    file_content = BytesIO(b"fake_image_data")
+    files = {"thumbnail": ("thumbnail.jpg", file_content, "image/jpeg")}
+    form_data = {
+        "type": "dummy",
+        "channel_title": "Dummy Channel",
+        "channel_description": "This is a dummy channel",
+        "country": "LK",
+        "subscriber_count": 0,
+        "video_count": 0,
+        "view_count": 0
+    }
+
+    response = authenticated_client.post(
+        "/api/v1/channels/",
+        data=form_data,
+        files=files,
+        headers=auth_headers
+    )
+
+    assert response.status_code == 201
+    data = response.json()
+    assert data["type"] == "dummy"
+    assert data["channel_title"] == "Dummy Channel"
+    assert data["thumbnail_url"] is not None
 
 
 def test_list_channels(authenticated_client: TestClient, auth_headers: dict, db: Session, test_user: User):
@@ -37,17 +69,18 @@ def test_list_channels(authenticated_client: TestClient, auth_headers: dict, db:
         user_id=test_user.id,
         channel_id="UC_channel1",
         channel_title="Channel 1",
+        type="real",
         subscriber_count=1000,
         video_count=10,
         view_count=50000
     )
     channel2 = Channel(
         user_id=test_user.id,
-        channel_id="UC_channel2",
-        channel_title="Channel 2",
-        subscriber_count=2000,
-        video_count=20,
-        view_count=100000
+        channel_title="Dummy Channel 2",
+        type="dummy",
+        subscriber_count=0,
+        video_count=0,
+        view_count=0
     )
     db.add_all([channel1, channel2])
     db.commit()
@@ -60,12 +93,21 @@ def test_list_channels(authenticated_client: TestClient, auth_headers: dict, db:
     assert len(data["channels"]) == 2
 
 
+def test_filter_by_type(authenticated_client: TestClient, auth_headers: dict):
+    """Test filtering channels by type."""
+    response = authenticated_client.get("/api/v1/channels/?type_filter=dummy", headers=auth_headers)
+    assert response.status_code == 200
+    data = response.json()
+    assert "channels" in data
+
+
 def test_get_channel(authenticated_client: TestClient, auth_headers: dict, db: Session, test_user: User):
     """Test getting a specific channel."""
     channel = Channel(
         user_id=test_user.id,
         channel_id="UC_test_channel",
         channel_title="Test Channel",
+        type="real",
         subscriber_count=5000,
         video_count=25,
         view_count=250000
@@ -80,6 +122,7 @@ def test_get_channel(authenticated_client: TestClient, auth_headers: dict, db: S
     data = response.json()
     assert data["id"] == channel.id
     assert data["channel_id"] == channel.channel_id
+    assert data["type"] == "real"
 
 
 def test_update_channel(authenticated_client: TestClient, auth_headers: dict, db: Session, test_user: User):
@@ -88,6 +131,7 @@ def test_update_channel(authenticated_client: TestClient, auth_headers: dict, db
         user_id=test_user.id,
         channel_id="UC_test_channel",
         channel_title="Test Channel",
+        type="real",
         subscriber_count=5000,
         video_count=25,
         view_count=250000
@@ -99,6 +143,7 @@ def test_update_channel(authenticated_client: TestClient, auth_headers: dict, db
     update_data = {
         "channel_title": "Updated Channel Title",
         "subscriber_count": 6000,
+        "likes": 150
     }
 
     response = authenticated_client.patch(
@@ -111,6 +156,7 @@ def test_update_channel(authenticated_client: TestClient, auth_headers: dict, db
     data = response.json()
     assert data["channel_title"] == update_data["channel_title"]
     assert data["subscriber_count"] == update_data["subscriber_count"]
+    assert data["likes"] == update_data["likes"]
 
 
 def test_delete_channel(authenticated_client: TestClient, auth_headers: dict, db: Session, test_user: User):
@@ -119,6 +165,7 @@ def test_delete_channel(authenticated_client: TestClient, auth_headers: dict, db
         user_id=test_user.id,
         channel_id="UC_test_channel",
         channel_title="Test Channel",
+        type="real",
         subscriber_count=5000,
         video_count=25,
         view_count=250000
@@ -158,6 +205,7 @@ def test_access_other_user_channel(
         user_id=other_user.id,
         channel_id="UC_other_channel",
         channel_title="Other Channel",
+        type="real",
         subscriber_count=1000,
         video_count=10,
         view_count=50000
