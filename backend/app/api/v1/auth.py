@@ -1,5 +1,4 @@
 from fastapi import APIRouter, Depends, status, Request
-from fastapi.responses import RedirectResponse
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 from datetime import datetime, timedelta
@@ -7,7 +6,7 @@ from itsdangerous import URLSafeTimedSerializer
 from app.schemas.user import UserCreate, UserResponse, Token, GoogleAuthResponse
 from app.services.user_service import UserService
 from app.services.oauth_service import OAuthService, oauth
-from app.config import settings
+from app.core.config import settings
 from app.core.exceptions import OAuthException
 from app.db.session import get_db
 from app.dependencies import get_current_user

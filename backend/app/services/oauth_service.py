@@ -1,8 +1,7 @@
 from authlib.integrations.starlette_client import OAuth
-from app.config import settings
+from app.core.config import settings
 from google.oauth2.credentials import Credentials
 from googleapiclient.discovery import build
-from datetime import datetime
 import httpx
 
 oauth = OAuth()

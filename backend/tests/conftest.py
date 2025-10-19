@@ -3,7 +3,7 @@ from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from app.main import app
-from app.config import settings
+from app.core.config import settings
 from app.models.user import User
 from app.core.security import get_password_hash
 from app.db.session import Base, get_db
