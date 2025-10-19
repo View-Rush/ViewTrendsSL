@@ -1,4 +1,6 @@
 """Tests for video endpoints."""
+from datetime import datetime, timezone
+
 import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy.orm import Session
@@ -372,3 +374,44 @@ def test_analyze_thumbnail(client: TestClient, auth_headers: dict):
     data = response.json()
     assert "analysis" in data
     assert "quality_score" in data["analysis"]
+
+def test_import_youtube_video(
+        client: TestClient,
+        auth_headers: dict,
+        db: Session,
+        test_user: User,
+        test_channel: Channel,
+        monkeypatch
+):
+    """Test importing a video from YouTube (via API)."""
+
+    # Mock YouTubeService.get_video_details to avoid real API call
+    def mock_get_video_details(self, video_id: str):
+        return {
+            "video_id": "dQw4w9WgXcQ",
+            "title": "Mocked YouTube Video",
+            "description": "Mock description",
+            "thumbnail_url": "https://img.youtube.com/vi/dQw4w9WgXcQ/hqdefault.jpg",
+            "duration": "PT3M33S",
+            "view_count": 12345,
+            "like_count": 678,
+            "comment_count": 90,
+            "published_at": datetime(2021, 1, 1, 0, 0, tzinfo=timezone.utc),
+            "tags": ["mock", "video"],
+        }
+
+    monkeypatch.setattr("app.services.youtube_service.YouTubeService.get_video_details", mock_get_video_details)
+
+    # Test with a YouTube URL (should auto-extract ID)
+    response = client.post(
+        "/api/v1/videos/import?input_value=https://youtu.be/dQw4w9WgXcQ",
+        headers=auth_headers
+    )
+
+    assert response.status_code == 201
+    data = response.json()
+    assert data["title"] == "Mocked YouTube Video"
+    assert data["video_id"] == "dQw4w9WgXcQ"
+    assert data["is_uploaded"] is True
+    assert data["is_draft"] is False
+    assert data["source_type"] == "youtube"

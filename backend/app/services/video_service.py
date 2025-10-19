@@ -1,4 +1,6 @@
 """Video service for business logic."""
+import re
+
 from sqlalchemy.orm import Session
 from sqlalchemy import and_
 from typing import Optional
@@ -6,6 +8,7 @@ from datetime import datetime
 from app.models import Video, Channel, VideoSourceType
 from app.schemas import VideoCreate, VideoUpdate
 from app.core.exceptions import VideoNotFoundException, ForbiddenException
+from app.services.youtube_service import YouTubeService
 
 
 class VideoService:
@@ -165,3 +168,57 @@ class VideoService:
         db.commit()
         db.refresh(video)
         return video
+
+    @staticmethod
+    def import_from_youtube(db: Session, input_value: str, user_id: int) -> Video:
+        """Import a video from YouTube by URL or video ID, and store in the database."""
+        # Extract video ID from URL or direct input
+        youtube_video_id = VideoService._extract_video_id(input_value)
+        if not youtube_video_id:
+            raise ValueError("Invalid YouTube URL or video ID")
+
+        # Fetch data from YouTube API
+        yt = YouTubeService()
+        video_data = yt.get_video_details(youtube_video_id)
+        if not video_data:
+            raise VideoNotFoundException("YouTube video not found")
+
+        # Add YouTube-specific defaults
+        video_data["is_uploaded"] = True
+        video_data["is_draft"] = False
+        video_data["source_type"] = "youtube"
+
+        # Find a default or user-selected channel
+        channel = db.query(Channel).filter(Channel.user_id == user_id).first()
+        if not channel:
+            raise ForbiddenException("No linked channel found for user")
+
+        # Create the video record
+        video = Video(
+            user_id=user_id,
+            channel_id=channel.id,
+            **video_data
+        )
+        db.add(video)
+        db.commit()
+        db.refresh(video)
+        return video
+
+    # Helper: Extract video ID from URL or direct input
+    @staticmethod
+    def _extract_video_id(value: str) -> str | None:
+        """Extract YouTube video ID from full URL or return it directly if already an ID."""
+        # Direct video ID (11-character YouTube ID pattern)
+        if re.fullmatch(r"^[a-zA-Z0-9_-]{11}$", value):
+            return value
+
+        # Try to extract from YouTube URL patterns
+        patterns = [
+            r"(?:v=|\/)([0-9A-Za-z_-]{11}).*",  # regular URL
+            r"youtu\.be\/([0-9A-Za-z_-]{11})",  # short link
+        ]
+        for pattern in patterns:
+            match = re.search(pattern, value)
+            if match:
+                return match.group(1)
+        return None

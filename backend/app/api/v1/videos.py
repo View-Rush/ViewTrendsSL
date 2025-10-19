@@ -119,3 +119,13 @@ def analyze_thumbnail(
     }
 
     return ThumbnailAnalysisResponse(analysis=analysis)
+
+@router.post("/import", response_model=VideoResponse, status_code=status.HTTP_201_CREATED)
+def import_youtube_video(
+    input_value: str = Query(..., description="YouTube video ID"),
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_active_user),
+):
+    """Import a video from YouTube into the user's library."""
+    video = VideoService.import_from_youtube(db, input_value, current_user.id)
+    return video
