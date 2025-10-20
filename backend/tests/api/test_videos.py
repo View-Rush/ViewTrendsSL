@@ -393,6 +393,7 @@ def test_import_youtube_video(
             "description": "Mock description",
             "thumbnail_url": "https://img.youtube.com/vi/dQw4w9WgXcQ/hqdefault.jpg",
             "duration": "PT3M33S",
+            "channel_id": "UC_test_channel",
             "view_count": 12345,
             "like_count": 678,
             "comment_count": 90,
