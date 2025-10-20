@@ -29,6 +29,8 @@ export type { UserUpdate } from './models/UserUpdate';
 export type { ValidationError } from './models/ValidationError';
 export type { VideoCreate } from './models/VideoCreate';
 export type { VideoListResponse } from './models/VideoListResponse';
+export type { VideoPredictionRequest } from './models/VideoPredictionRequest';
+export type { VideoPredictionResponse } from './models/VideoPredictionResponse';
 export type { VideoResponse } from './models/VideoResponse';
 export { VideoSourceType } from './models/VideoSourceType';
 export type { VideoUpdate } from './models/VideoUpdate';

@@ -8,6 +8,8 @@ import type { PredictionPerformanceResponse } from '../models/PredictionPerforma
 import type { PredictionResponse } from '../models/PredictionResponse';
 import type { PredictionStatus } from '../models/PredictionStatus';
 import type { UpdateActualViews } from '../models/UpdateActualViews';
+import type { VideoPredictionRequest } from '../models/VideoPredictionRequest';
+import type { VideoPredictionResponse } from '../models/VideoPredictionResponse';
 import type { CancelablePromise } from '../core/CancelablePromise';
 import { OpenAPI } from '../core/OpenAPI';
 import { request as __request } from '../core/request';
@@ -117,6 +119,25 @@ export class PredictionsService {
             path: {
                 'prediction_id': predictionId,
             },
+            body: requestBody,
+            mediaType: 'application/json',
+            errors: {
+                422: `Validation Error`,
+            },
+        });
+    }
+    /**
+     * Create Video And Prediction
+     * @param requestBody
+     * @returns VideoPredictionResponse Successful Response
+     * @throws ApiError
+     */
+    public static createVideoAndPredictionApiV1PredictionsCreateCombinedPost(
+        requestBody: VideoPredictionRequest,
+    ): CancelablePromise<VideoPredictionResponse> {
+        return __request(OpenAPI, {
+            method: 'POST',
+            url: '/api/v1/predictions/create-combined',
             body: requestBody,
             mediaType: 'application/json',
             errors: {
