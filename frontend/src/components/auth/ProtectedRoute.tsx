@@ -1,8 +1,9 @@
-import { Navigate } from 'react-router-dom';
+import {Navigate, useLocation} from 'react-router-dom';
 import { useAuthStore } from '@/stores/authStore';
 
 export function ProtectedRoute({ children }: { children: React.ReactNode }) {
     const { user, loading } = useAuthStore();
+    const location = useLocation();
 
     if (loading) {
         return (
@@ -13,8 +14,11 @@ export function ProtectedRoute({ children }: { children: React.ReactNode }) {
     }
 
     if (!user) {
-        return <Navigate to="/auth" replace />;
+        console.log("  ↪ Saved redirect location:", location.pathname);
+        return <Navigate to="/auth" state={{ from: location }} replace />;
     }
 
+    console.log("hehe")
+    console.log(children)
     return <>{children}</>;
 }

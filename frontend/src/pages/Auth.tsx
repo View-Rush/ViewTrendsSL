@@ -5,12 +5,16 @@ import { Card } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Label } from '@/components/ui/label';
 import { useAuthStore } from '@/stores/authStore';
-import { Link, Navigate, useNavigate } from 'react-router-dom';
+import {Link, Navigate, useLocation, useNavigate} from 'react-router-dom';
 import { Youtube, Mail } from 'lucide-react';
 
 export default function Auth() {
-    const { user, signIn, signUp, signInWithGoogle, loading } = useAuthStore();
     const navigate = useNavigate();
+    const location = useLocation();
+    const { user, signIn, signUp, signInWithGoogle, loading } = useAuthStore();
+
+    const from = (location.state as any)?.from?.pathname || "/dashboard";
+
     const [loginEmail, setLoginEmail] = useState('');
     const [loginPassword, setLoginPassword] = useState('');
     const [registerName, setRegisterName] = useState('');
@@ -18,8 +22,16 @@ export default function Auth() {
     const [registerPassword, setRegisterPassword] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
 
+    if (loading) {
+        return (
+            <div className="min-h-screen flex items-center justify-center">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+            </div>
+        );
+    }
+
     // Redirect if already logged in
-    if (!loading && user) {
+    if (user) {
         return <Navigate to="/dashboard" replace />;
     }
 
@@ -29,7 +41,7 @@ export default function Auth() {
 
         setIsSubmitting(true);
         const { error } = await signIn(loginEmail, loginPassword);
-        if (!error) navigate('/dashboard');
+        if (!error) navigate(from, { replace: true });
         setIsSubmitting(false);
     };
 

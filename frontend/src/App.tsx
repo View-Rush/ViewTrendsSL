@@ -17,6 +17,7 @@ import Predictions from "./pages/Predictions";
 import Analytics from "./pages/Analytics";
 import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
+import {useAuthStore} from "@/stores/authStore.ts";
 
 const queryClient = new QueryClient();
 
@@ -34,6 +35,15 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => (
 
 const App = () => {
     useAuthInit();
+    const { loading } = useAuthStore();
+
+    if (loading) {
+        return (
+            <div className="min-h-screen flex items-center justify-center">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+            </div>
+        );
+    }
 
     return (
         <QueryClientProvider client={queryClient}>

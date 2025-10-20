@@ -23,23 +23,44 @@ export const useAuthStore = create<AuthState>((set) => ({
     setLoading: (loading) => set({ loading }),
 
     initialize: () => {
+        // Start initializing
+        set({ loading: true });
+
         const token = authService.getToken();
         const storedUser = authService.getStoredUser();
 
-        if (token && storedUser) {
-            set({ user: storedUser, loading: false });
-            authService.getCurrentUser().then((userData) => {
-                const user = userData as unknown as User;
-                authService.setStoredUser(user);
-                set({ user });
-            }).catch(() => {
-                authService.logout();
-                set({ user: null, loading: false });
-            });
-        } else {
-            set({ loading: false });
+        // Restore token for the API client
+        if (token) {
+            authService.setToken(token);
         }
 
+        // Case 1: Token exists
+        if (token) {
+            // Temporarily set stored user if available (for instant UI load)
+            if (storedUser) {
+                set({ user: storedUser });
+            }
+
+            // Always verify current user with backend
+            authService
+                .getCurrentUser()
+                .then((userData) => {
+                    const user = userData as unknown as User;
+                    authService.setStoredUser(user);
+                    set({ user, loading: false });
+                })
+                .catch((err) => {
+                    console.warn("Auth init failed:", err);
+                    authService.logout();
+                    set({ user: null, loading: false });
+                });
+        }
+        // Case 2: No token
+        else {
+            set({ user: null, loading: false });
+        }
+
+        // No cleanup needed
         return () => {};
     },
 
