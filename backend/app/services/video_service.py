@@ -1,6 +1,7 @@
 """Video service for business logic."""
 import re
 
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 from sqlalchemy import and_
 from typing import Optional
@@ -173,25 +174,34 @@ class VideoService:
 
     @staticmethod
     def import_from_youtube(db: Session, input_value: str, user_id: int) -> Video:
-        """Import a video from YouTube by URL or video ID, and store it in the database."""
+        """Import a YouTube video by URL or ID, creating it only if it doesn't already exist."""
+
+        # --- Step 1: Extract video ID ---
         youtube_video_id = VideoService._extract_video_id(input_value)
         if not youtube_video_id:
             raise ValueError("Invalid YouTube URL or video ID")
 
+        # --- Step 2: Check if video already exists for this user ---
+        existing_video = db.query(Video).filter(
+            and_(Video.user_id == user_id, Video.video_id == youtube_video_id)
+        ).first()
+
+        if existing_video:
+            # Optional: refresh metadata if needed
+            return existing_video
+
+        # --- Step 3: Fetch metadata from YouTube ---
         yt = YouTubeService()
         video_data = yt.get_video_details(youtube_video_id)
         if not video_data:
             raise VideoNotFoundException("YouTube video not found")
 
-        # Extract the channel ID from the video data
         youtube_channel_id = video_data.get("channel_id")
         if not youtube_channel_id:
             raise ValueError("Missing channel ID in YouTube video data")
 
-        # Try to get existing channel for this user
+        # --- Step 4: Ensure channel exists (or create) ---
         channel = ChannelService.get_channel_by_youtube_id(db, youtube_channel_id, user_id)
-
-        # If not found, fetch and create it using ChannelService
         if not channel:
             channel_data = yt.get_channel_details(youtube_channel_id)
             if not channel_data:
@@ -206,29 +216,38 @@ class VideoService:
                 subscriber_count=channel_data.get("subscriber_count", 0),
                 video_count=channel_data.get("video_count", 0),
                 view_count=channel_data.get("view_count", 0),
-                thumbnail_url=None,  # Add if mapper supports it later
+                thumbnail_url=None,
                 type="real",
                 is_connected=True,
             )
             channel = ChannelService.create_channel(db, channel_create, user_id)
 
-        # Add YouTube video defaults
+        # --- Step 5: Prepare video data ---
         video_data["is_uploaded"] = True
         video_data["is_draft"] = False
         video_data["source_type"] = VideoSourceType.YOUTUBE
 
+        # Remove potential foreign key conflicts
         video_data.pop("channel_id", None)
 
-        # Create the video record
+        # --- Step 6: Create safely ---
         video = Video(
             user_id=user_id,
             channel_id=channel.id,
             **video_data
         )
-        db.add(video)
-        db.commit()
-        db.refresh(video)
-        return video
+
+        try:
+            db.add(video)
+            db.commit()
+            db.refresh(video)
+            return video
+        except IntegrityError:
+            db.rollback()
+            # The video might have been created concurrently — fetch it again
+            return db.query(Video).filter(
+                and_(Video.user_id == user_id, Video.video_id == youtube_video_id)
+            ).first()
 
     @staticmethod
     def _extract_video_id(value: str) -> Optional[str]:
