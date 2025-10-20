@@ -3,7 +3,7 @@ from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 from datetime import datetime, timedelta
 from itsdangerous import URLSafeTimedSerializer
-from app.schemas.user import UserCreate, UserResponse, Token, GoogleAuthResponse
+from app.schemas.user import UserCreate, UserResponse, Token, GoogleAuthResponse, AuthResponse
 from app.services.user_service import UserService
 from app.services.oauth_service import OAuthService, oauth
 from app.core.config import settings
@@ -18,15 +18,21 @@ router = APIRouter()
 serializer = URLSafeTimedSerializer(settings.SECRET_KEY)
 
 
-@router.post("/register", response_model=UserResponse, status_code=status.HTTP_201_CREATED)
+@router.post("/register", response_model=AuthResponse, status_code=status.HTTP_201_CREATED)
 def register(user_data: UserCreate, db: Session = Depends(get_db)):
-    """Register a new user with username/password"""
+    """Register a new user and return token + user"""
     user_service = UserService(db)
     user = user_service.create_user(user_data)
-    return user
+    access_token = user_service.generate_token(user)
+
+    return AuthResponse(
+        access_token=access_token,
+        token_type="bearer",
+        user=user
+    )
 
 
-@router.post("/login", response_model=Token)
+@router.post("/login", response_model=AuthResponse)
 def login(
         form_data: OAuth2PasswordRequestForm = Depends(),
         db: Session = Depends(get_db)
@@ -36,10 +42,11 @@ def login(
     user = user_service.authenticate_user(form_data.username, form_data.password)
     access_token = user_service.generate_token(user)
 
-    return {
-        "access_token": access_token,
-        "token_type": "bearer"
-    }
+    return AuthResponse(
+        access_token=access_token,
+        token_type="bearer",
+        user=user
+    )
 
 
 @router.get("/google", response_model=GoogleAuthResponse)

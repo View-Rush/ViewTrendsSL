@@ -1,22 +1,36 @@
-import {type Body_login_api_v1_auth_login_post, OpenAPI, type Token, type UserCreate, type UserResponse,} from '@/api';
+import {
+    AuthResponse,
+    type Body_login_api_v1_auth_login_post,
+    OpenAPI,
+    type Token,
+    type UserCreate,
+    type UserResponse,
+} from '@/api';
 import {AuthenticationService, UsersService} from "@/api";
 import type {User} from "@/types";
 
+const TOKEN_KEY = 'token';
+const USER_KEY = 'user';
 
 export const authService = {
-    async login(credentials: Body_login_api_v1_auth_login_post): Promise<Token> {
-        const token = await AuthenticationService.loginApiV1AuthLoginPost(credentials);
-        // Optionally store token in localStorage
-        localStorage.setItem('token', token.access_token);
+    async login(credentials: Body_login_api_v1_auth_login_post): Promise<UserResponse> {
+        const response = await AuthenticationService.loginApiV1AuthLoginPost(credentials) as unknown as AuthResponse;
 
-        // Set token for generated API client
-        OpenAPI.TOKEN = token.access_token;
+        this.setToken(response.access_token);
+        this.setStoredUser(response.user);
 
-        return token;
+        return response.user;
     },
 
     async register(data: UserCreate): Promise<UserResponse> {
-        return AuthenticationService.registerApiV1AuthRegisterPost(data);
+        const response = await AuthenticationService.registerApiV1AuthRegisterPost(data) as unknown as AuthResponse;
+
+        if (response.access_token) {
+            this.setToken(response.access_token);
+        }
+        this.setStoredUser(response.user);
+
+        return response.user;
     },
 
     async getCurrentUser(): Promise<UserResponse> {
@@ -34,12 +48,6 @@ export const authService = {
         return token;
     },
 
-    logout() {
-        localStorage.removeItem('token');
-        localStorage.removeItem('user');
-        OpenAPI.TOKEN = "";
-    },
-
     getToken(): string | null {
         return localStorage.getItem('token');
     },
@@ -47,6 +55,11 @@ export const authService = {
     setToken(token: string) {
         localStorage.setItem('token', token);
         OpenAPI.TOKEN = token;
+    },
+
+    clearToken() {
+        localStorage.removeItem(TOKEN_KEY);
+        OpenAPI.TOKEN = '';
     },
 
     getStoredUser(): User | null {
@@ -63,5 +76,14 @@ export const authService = {
 
     setStoredUser(user: User) {
         localStorage.setItem('user', JSON.stringify(user));
+    },
+
+    clearStoredUser() {
+        localStorage.removeItem(USER_KEY);
+    },
+
+    logout() {
+        this.clearToken();
+        this.clearStoredUser();
     },
 };

@@ -1,9 +1,11 @@
 import pytest
 from fastapi import status
+from starlette.responses import Response
+from unittest.mock import AsyncMock, patch
 
 
 def test_register_user(client):
-    """Test user registration"""
+    """Test user registration returns token + user"""
     response = client.post(
         "/api/v1/auth/register",
         json={
@@ -12,16 +14,27 @@ def test_register_user(client):
             "password": "newpassword123"
         }
     )
+
+    # Validate status code
     assert response.status_code == status.HTTP_201_CREATED
+
+    # Parse JSON response
     data = response.json()
-    assert data["email"] == "newuser@example.com"
-    assert data["full_name"] == "newuser"
-    assert "id" in data
-    assert data["is_active"] is True
+
+    # Check for token fields
+    assert "access_token" in data
+    assert data["token_type"] == "bearer"
+
+    # Check user object fields
+    user = data["user"]
+    assert user["email"] == "newuser@example.com"
+    assert user["full_name"] == "newuser"
+    assert "id" in user
+    assert user["is_active"] is True
 
 
 def test_register_duplicate_email(client, test_user):
-    """Test registration with duplicate email"""
+    """Test registration fails with duplicate email"""
     response = client.post(
         "/api/v1/auth/register",
         json={
@@ -30,12 +43,14 @@ def test_register_duplicate_email(client, test_user):
             "password": "password123"
         }
     )
+
+    # Expect a 400 for duplicate email
     assert response.status_code == status.HTTP_400_BAD_REQUEST
     assert "Email already registered" in response.json()["detail"]
 
 
 def test_login_success(client, test_user):
-    """Test successful login"""
+    """Test successful login returns token + user"""
     response = client.post(
         "/api/v1/auth/login",
         data={
@@ -43,14 +58,26 @@ def test_login_success(client, test_user):
             "password": "testpassword123"
         }
     )
+
+    # Validate response success
     assert response.status_code == status.HTTP_200_OK
+
+    # Parse JSON response
     data = response.json()
+
+    # Token assertions
     assert "access_token" in data
     assert data["token_type"] == "bearer"
 
+    # User assertions (if AuthResponse)
+    if "user" in data:
+        user = data["user"]
+        assert user["email"] == test_user.email
+        assert "id" in user
+
 
 def test_login_wrong_password(client, test_user):
-    """Test login with wrong password"""
+    """Test login fails with incorrect password"""
     response = client.post(
         "/api/v1/auth/login",
         data={
@@ -58,11 +85,13 @@ def test_login_wrong_password(client, test_user):
             "password": "wrongpassword"
         }
     )
+
+    # Expect unauthorized
     assert response.status_code == status.HTTP_401_UNAUTHORIZED
 
 
 def test_login_nonexistent_user(client):
-    """Test login with non-existent user"""
+    """Test login fails with non-existent user"""
     response = client.post(
         "/api/v1/auth/login",
         data={
@@ -70,27 +99,31 @@ def test_login_nonexistent_user(client):
             "password": "password123"
         }
     )
+
+    # Expect unauthorized
     assert response.status_code == status.HTTP_401_UNAUTHORIZED
-
-
-from starlette.responses import Response
-from unittest.mock import AsyncMock, patch
 
 
 @patch("app.api.v1.auth.oauth.google.authorize_redirect", new_callable=AsyncMock)
 def test_google_login_endpoint(mock_auth_redirect, client):
     """Test Google login endpoint returns mocked authorization URL"""
 
-    # Create a fake Starlette Response to mimic actual redirect
+    # Mock redirect response
     mock_response = Response(status_code=302, headers={
         "location": "https://accounts.google.com/o/oauth2/auth?state=mock_state"
     })
     mock_auth_redirect.return_value = mock_response
 
+    # Call endpoint
     response = client.get("/api/v1/auth/google")
 
+    # Validate success
     assert response.status_code == 200
+
+    # Parse response
     data = response.json()
+
+    # Check structure
     assert "authorization_url" in data
     assert "state" in data
     assert "accounts.google.com" in data["authorization_url"]

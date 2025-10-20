@@ -50,3 +50,9 @@ class TokenData(BaseModel):
 class GoogleAuthResponse(BaseModel):
     authorization_url: str
     state: str
+
+
+class AuthResponse(BaseModel):
+    access_token: str
+    token_type: str = "bearer"
+    user: UserResponse

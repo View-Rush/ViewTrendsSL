@@ -2,25 +2,25 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
+import type { AuthResponse } from '../models/AuthResponse';
 import type { Body_login_api_v1_auth_login_post } from '../models/Body_login_api_v1_auth_login_post';
 import type { GoogleAuthResponse } from '../models/GoogleAuthResponse';
 import type { Token } from '../models/Token';
 import type { UserCreate } from '../models/UserCreate';
-import type { UserResponse } from '../models/UserResponse';
 import type { CancelablePromise } from '../core/CancelablePromise';
 import { OpenAPI } from '../core/OpenAPI';
 import { request as __request } from '../core/request';
 export class AuthenticationService {
     /**
      * Register
-     * Register a new user with username/password
+     * Register a new user and return token + user
      * @param requestBody
-     * @returns UserResponse Successful Response
+     * @returns AuthResponse Successful Response
      * @throws ApiError
      */
     public static registerApiV1AuthRegisterPost(
         requestBody: UserCreate,
-    ): CancelablePromise<UserResponse> {
+    ): CancelablePromise<AuthResponse> {
         return __request(OpenAPI, {
             method: 'POST',
             url: '/api/v1/auth/register',
@@ -35,12 +35,12 @@ export class AuthenticationService {
      * Login
      * Login with username/password and get JWT token
      * @param formData
-     * @returns Token Successful Response
+     * @returns AuthResponse Successful Response
      * @throws ApiError
      */
     public static loginApiV1AuthLoginPost(
         formData: Body_login_api_v1_auth_login_post,
-    ): CancelablePromise<Token> {
+    ): CancelablePromise<AuthResponse> {
         return __request(OpenAPI, {
             method: 'POST',
             url: '/api/v1/auth/login',

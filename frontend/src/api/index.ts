@@ -7,6 +7,7 @@ export { CancelablePromise, CancelError } from './core/CancelablePromise';
 export { OpenAPI } from './core/OpenAPI';
 export type { OpenAPIConfig } from './core/OpenAPI';
 
+export type { AuthResponse } from './models/AuthResponse';
 export type { Body_create_channel_api_v1_channels__post } from './models/Body_create_channel_api_v1_channels__post';
 export type { Body_login_api_v1_auth_login_post } from './models/Body_login_api_v1_auth_login_post';
 export type { ChannelListResponse } from './models/ChannelListResponse';
