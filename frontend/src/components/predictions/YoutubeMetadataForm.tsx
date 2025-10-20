@@ -1,4 +1,4 @@
-import { useState } from "react";
+import {useEffect, useState} from "react";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -24,7 +24,7 @@ interface Props {
     prefill?: any;
 }
 
-export default function ManualMetadataForm({
+export default function YoutubeMetadataForm({
                                                onCreate,
                                                creating,
                                                selectedChannel,
@@ -52,7 +52,7 @@ export default function ManualMetadataForm({
     const [calendarOpen, setCalendarOpen] = useState(false);
     const [timeOpen, setTimeOpen] = useState(false);
 
-    /** ✅ Convert duration to PT#M#S */
+    /** Convert duration to PT#M#S */
     const formatDuration = (m: number, s: number) => `PT${m}M${s}S`;
 
     const handleCreate = () => {
@@ -82,9 +82,36 @@ export default function ManualMetadataForm({
         });
     };
 
+    useEffect(() => {
+        if (prefill) {
+            setForm({
+                title: prefill.title || "",
+                description: prefill.description || "",
+                useDayOfWeek: false,
+                publishDate: prefill.published_at ? new Date(prefill.published_at) : new Date(),
+                dayOfWeek: "",
+                publishTime: prefill.published_at ? new Date(prefill.published_at) : new Date(),
+                durationMinutes: prefill.duration
+                    ? parseInt(prefill.duration.match(/PT(\d+)M/)?.[1] || "0")
+                    : 0,
+                durationSeconds: prefill.duration
+                    ? parseInt(prefill.duration.match(/PT\d+M(\d+)S/)?.[1] || "0")
+                    : 0,
+                category: prefill.category_id || "",
+                language: prefill.default_language || "",
+            });
+            setTags(prefill.tags || []);
+            setSelectedChannel(prefill.channel_id || "");
+        }
+    }, [prefill]);
+
+
     return (
         <div className="space-y-6">
-            <ChannelSelector value={selectedChannel} onChange={setSelectedChannel} />
+            <ChannelSelector
+                value={prefill?.channel_id || selectedChannel}
+                onChange={setSelectedChannel}
+            />
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {/* Title */}

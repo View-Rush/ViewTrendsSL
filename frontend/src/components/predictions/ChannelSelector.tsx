@@ -10,7 +10,7 @@ import { channelsService } from "@/services/channels.service";
 import type { Body_create_channel_api_v1_channels__post } from "@/api";
 
 interface Props {
-    value: Channel | null;
+    value: Channel | number | null;
     onChange: (channel: Channel | null) => void;
 }
 
@@ -26,6 +26,7 @@ export default function ChannelSelector({ value, onChange }: Props) {
     const [open, setOpen] = useState(false);
     const [channels, setChannels] = useState<Channel[]>([]);
     const [loading, setLoading] = useState(false);
+    const [fetchingChannel, setFetchingChannel] = useState(false);
     const [query, setQuery] = useState("");
     const [mode, setMode] = useState<"idle" | "adding" | "editing">("idle");
     const [localEdit, setLocalEdit] = useState<LocalChannelForm | null>(null);
@@ -43,14 +44,31 @@ export default function ChannelSelector({ value, onChange }: Props) {
         return () => document.removeEventListener("mousedown", onDoc);
     }, []);
 
+    // ✅ Handle both Channel object and numeric ID
     useEffect(() => {
         if (!value) {
             setSelectedDetails(null);
             setMode("idle");
             return;
         }
+
+        if (typeof value === "number") {
+            setFetchingChannel(true);
+            channelsService
+                .getChannel(value)
+                .then((ch) => {
+                    setSelectedDetails(ch);
+                    onChange(ch);
+                })
+                .catch(() => toast.error("Failed to fetch channel"))
+                .finally(() => setFetchingChannel(false));
+            return;
+        }
+
+        // If it's already a Channel object
+        setSelectedDetails(value);
         fetchDetails(value.id);
-    }, [value?.id]);
+    }, [value]);
 
     const loadChannels = async () => {
         setLoading(true);
@@ -115,7 +133,7 @@ export default function ChannelSelector({ value, onChange }: Props) {
     const cancelEditOrAdd = () => {
         setMode("idle");
         setLocalEdit(null);
-        if (value) fetchDetails(value.id);
+        if (selectedDetails?.id) fetchDetails(selectedDetails.id);
     };
 
     const handleSave = async () => {
@@ -148,14 +166,9 @@ export default function ChannelSelector({ value, onChange }: Props) {
                     view_count: localEdit.view_count,
                 };
 
-                const updated = await channelsService.updateChannel(
-                    selectedDetails.id,
-                    updateData
-                );
+                const updated = await channelsService.updateChannel(selectedDetails.id, updateData);
                 toast.success("Channel updated");
-                setChannels((prev) =>
-                    prev.map((p) => (p.id === updated.id ? updated : p))
-                );
+                setChannels((prev) => prev.map((p) => (p.id === updated.id ? updated : p)));
                 onChange(updated);
                 setSelectedDetails(updated);
             }
@@ -202,11 +215,10 @@ export default function ChannelSelector({ value, onChange }: Props) {
 
     return (
         <div ref={containerRef} className="space-y-3 relative">
-            {/* Search / dropdown */}
             <div className="relative">
                 <Input
                     placeholder="Search or select channel"
-                    value={query || value?.channel_title || ""}
+                    value={query || (selectedDetails?.channel_title ?? "")}
                     onChange={(e) => {
                         setQuery(e.target.value);
                         setOpen(true);
@@ -233,29 +245,23 @@ export default function ChannelSelector({ value, onChange }: Props) {
                             </Button>
                         </div>
                         {loading ? (
-                            <div className="p-3 text-sm text-muted-foreground">
-                                Loading...
-                            </div>
+                            <div className="p-3 text-sm text-muted-foreground">Loading...</div>
                         ) : filtered.length === 0 ? (
-                            <div className="p-3 text-sm text-muted-foreground">
-                                No channels found
-                            </div>
+                            <div className="p-3 text-sm text-muted-foreground">No channels found</div>
                         ) : (
                             filtered.map((c) => (
                                 <div
                                     key={c.id}
                                     onClick={() => handleSelect(c)}
                                     className={`p-3 cursor-pointer flex items-center justify-between transition-colors ${
-                                        value?.id === c.id
+                                        selectedDetails?.id === c.id
                                             ? "bg-primary/10 border-l-2 border-primary"
                                             : "hover:bg-muted/50"
                                     }`}
                                 >
                                     <div className="flex items-center gap-3">
                                         <div className="font-medium">{c.channel_title}</div>
-                                        <Badge
-                                            variant={c.type === "real" ? "secondary" : "outline"}
-                                        >
+                                        <Badge variant={c.type === "real" ? "secondary" : "outline"}>
                                             {c.type}
                                         </Badge>
                                     </div>
@@ -269,7 +275,14 @@ export default function ChannelSelector({ value, onChange }: Props) {
                 )}
             </div>
 
-            {/* Add or edit section */}
+            {/* Loading indicator for ID-based fetch */}
+            {fetchingChannel && (
+                <div className="p-3 text-sm text-muted-foreground border border-border rounded-md">
+                    Loading channel details...
+                </div>
+            )}
+
+            {/* Add/Edit or Display Channel */}
             {mode === "adding" && localEdit ? (
                 <div className="p-4 border border-border rounded-md bg-muted/5 space-y-3">
                     <div className="font-semibold">Add New Channel</div>
@@ -287,9 +300,7 @@ export default function ChannelSelector({ value, onChange }: Props) {
                             label="Subscribers"
                             editable
                             value={localEdit.subscriber_count}
-                            onChange={(v) =>
-                                setLocalEdit({ ...localEdit, subscriber_count: v })
-                            }
+                            onChange={(v) => setLocalEdit({ ...localEdit, subscriber_count: v })}
                         />
                         <NumericField
                             label="Total Views"
@@ -319,9 +330,7 @@ export default function ChannelSelector({ value, onChange }: Props) {
                         <div>
                             <div className="font-semibold">{selectedDetails.channel_title}</div>
                             <div className="text-xs text-muted-foreground">
-                                {selectedDetails.type === "real"
-                                    ? "Real Channel"
-                                    : "Dummy Channel"}
+                                {selectedDetails.type === "real" ? "Real Channel" : "Dummy Channel"}
                             </div>
                         </div>
                         {selectedDetails.type === "dummy" && mode !== "editing" && (

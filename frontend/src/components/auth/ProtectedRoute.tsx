@@ -14,11 +14,8 @@ export function ProtectedRoute({ children }: { children: React.ReactNode }) {
     }
 
     if (!user) {
-        console.log("  ↪ Saved redirect location:", location.pathname);
         return <Navigate to="/auth" state={{ from: location }} replace />;
     }
 
-    console.log("hehe")
-    console.log(children)
     return <>{children}</>;
 }

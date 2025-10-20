@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
+import { useNavigate } from "react-router-dom";
 
 const accuracyData = [
   { name: "Week 1", accuracy: 78 },
@@ -15,6 +16,8 @@ const accuracyData = [
 ];
 
 const Dashboard = () => {
+  const navigate = useNavigate();
+
   return (
       <div className="p-6 space-y-6">
         {/* Stats Cards */}
@@ -59,15 +62,26 @@ const Dashboard = () => {
             <CardTitle className="text-xl">Quick Actions</CardTitle>
           </CardHeader>
           <CardContent className="flex gap-3">
-            <Button className="bg-primary hover:bg-primary/90">
+            <Button
+                className="bg-primary hover:bg-primary/90"
+                onClick={() => navigate("/predictions")}
+            >
               <Plus className="mr-2 h-4 w-4" />
               New Prediction
             </Button>
-            <Button variant="outline" className="border-border">
+            <Button
+                variant="outline"
+                className="border-border"
+                onClick={() => navigate("/videos")}
+            >
               <VideoIcon className="mr-2 h-4 w-4" />
               Add Video
             </Button>
-            <Button variant="outline" className="border-border">
+            <Button
+                variant="outline"
+                className="border-border"
+                onClick={() => navigate("/channels")}
+            >
               <RefreshCw className="mr-2 h-4 w-4" />
               Sync Channel
             </Button>
@@ -114,7 +128,9 @@ const Dashboard = () => {
           <Card className="bg-card border-border">
             <CardHeader className="flex flex-row items-center justify-between">
               <CardTitle className="text-xl">Recent Predictions</CardTitle>
-              <Button variant="link" className="text-primary">View all</Button>
+              <Button variant="link" className="text-primary" onClick={() => navigate("/predictions")}>
+                View all
+              </Button>
             </CardHeader>
             <CardContent className="space-y-3">
               <PredictionCard channel="Tech Insights Channel" accuracy={8.3} />
@@ -165,7 +181,9 @@ const Dashboard = () => {
           <Card className="bg-card border-border">
             <CardHeader className="flex flex-row items-center justify-between">
               <CardTitle className="text-xl">Recent Activity</CardTitle>
-              <Button variant="link" className="text-primary">View all</Button>
+              <Button variant="link" className="text-primary" onClick={() => navigate("/activities")}>
+                View all
+              </Button>
             </CardHeader>
             <CardContent className="space-y-1">
               <ActivityItem
