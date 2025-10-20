@@ -27,9 +27,6 @@ COPY . .
 # Install the application
 RUN poetry install --no-interaction --no-ansi
 
-# Copy .env into the container
-COPY .env /app/.env
-
 # Expose port
 EXPOSE 8000
 
