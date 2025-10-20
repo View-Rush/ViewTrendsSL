@@ -39,7 +39,7 @@ class Channel(Base):
     published_at = Column(DateTime, nullable=True)
 
     # Real channel–specific
-    channel_id = Column(String(255), unique=True, index=True, nullable=True)
+    channel_id = Column(String(255), index=True, nullable=True)
     custom_url = Column(String(255), nullable=True)
     is_connected = Column(Boolean, default=True)
     last_synced_at = Column(DateTime, nullable=True)

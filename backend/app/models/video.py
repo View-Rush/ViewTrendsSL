@@ -28,7 +28,7 @@ class Video(Base):
     source_metadata = Column(JSON, nullable=True)
 
     # YouTube video data
-    video_id = Column(String(255), unique=True, index=True, nullable=True)
+    video_id = Column(String(255), index=True, nullable=True)
     title = Column(String(500), nullable=False)
     description = Column(Text, nullable=True)
 
