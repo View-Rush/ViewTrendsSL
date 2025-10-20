@@ -67,6 +67,7 @@ const App = () => {
                                 </ProtectedRoute>
                             }
                         />
+
                         <Route
                             path="/channels"
                             element={
@@ -77,6 +78,7 @@ const App = () => {
                                 </ProtectedRoute>
                             }
                         />
+
                         <Route
                             path="/videos"
                             element={
@@ -87,8 +89,9 @@ const App = () => {
                                 </ProtectedRoute>
                             }
                         />
+
                         <Route
-                            path="/predictions"
+                            path="/predictions/*"
                             element={
                                 <ProtectedRoute>
                                     <DashboardLayout>
@@ -97,6 +100,7 @@ const App = () => {
                                 </ProtectedRoute>
                             }
                         />
+
                         <Route
                             path="/analytics"
                             element={
@@ -107,6 +111,7 @@ const App = () => {
                                 </ProtectedRoute>
                             }
                         />
+
                         <Route
                             path="/settings"
                             element={

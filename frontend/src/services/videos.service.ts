@@ -30,7 +30,7 @@ export const videosService = {
         );
     },
 
-    async getVideo(id: number): Promise<VideoResponse> {
+    async getVideoById(id: number): Promise<VideoResponse> {
         return VideosService.getVideoApiV1VideosVideoIdGet(id);
     },
 

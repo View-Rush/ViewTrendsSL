@@ -1,6 +1,5 @@
-import { Plus, TrendingUp, Target, CheckCircle } from "lucide-react";
+import { TrendingUp, Target, CheckCircle } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useEffect, useState } from "react";
 import { predictionsService } from "@/services/predictions.service";
@@ -21,8 +20,12 @@ const Predictions = () => {
       setLoading(true);
       const data = await predictionsService.getPredictions({ limit: 100 });
       setPredictions(data.predictions);
-    } catch (error: any) {
-      toast.error(error?.message || 'Failed to load predictions');
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        toast.error(error.message);
+      } else {
+        toast.error('Failed to load predictions');
+      }
     } finally {
       setLoading(false);
     }
@@ -46,10 +49,6 @@ const Predictions = () => {
             <h1 className="text-3xl font-bold">Predictions</h1>
             <p className="text-muted-foreground mt-1">Create and manage video performance predictions</p>
           </div>
-          <Button className="bg-primary hover:bg-primary/90">
-            <Plus className="mr-2 h-4 w-4" />
-            New Prediction
-          </Button>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">

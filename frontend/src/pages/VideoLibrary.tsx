@@ -1,9 +1,10 @@
-import { Search, Filter, Video } from "lucide-react";
+import { Search, Filter, Video, ArrowRight } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { videosService } from "@/services/videos.service";
 import type { VideoResponse } from "@/api";
 import { toast } from "sonner";
@@ -11,6 +12,7 @@ import { toast } from "sonner";
 const VideoLibrary = () => {
     const [videos, setVideos] = useState<VideoResponse[]>([]);
     const [loading, setLoading] = useState(true);
+    const navigate = useNavigate();
 
     useEffect(() => {
         loadVideos();
@@ -20,12 +22,21 @@ const VideoLibrary = () => {
         try {
             setLoading(true);
             const data = await videosService.getVideos({ limit: 100 });
-            setVideos(data.videos);
+            setVideos(data.videos || []);
         } catch (error: any) {
-            toast.error(error?.message || 'Failed to load videos');
+            toast.error(error?.message || "Failed to load videos");
         } finally {
             setLoading(false);
         }
+    };
+
+    const handleMakePrediction = (video: VideoResponse) => {
+        const route =
+            video.source_type === "youtube"
+                ? `/predictions/create/link?videoId=${video.id}`
+                : `/predictions/create/manual?videoId=${video.id}`;
+
+        navigate(route);
     };
 
     if (loading) {
@@ -35,11 +46,14 @@ const VideoLibrary = () => {
             </div>
         );
     }
+
     return (
         <div className="p-6 space-y-6">
             <div>
                 <h1 className="text-3xl font-bold">Video Library</h1>
-                <p className="text-muted-foreground mt-1">Browse and analyze all tracked videos</p>
+                <p className="text-muted-foreground mt-1">
+                    Browse and analyze all tracked videos
+                </p>
             </div>
 
             <div className="flex gap-4">
@@ -59,41 +73,77 @@ const VideoLibrary = () => {
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {videos.map((video) => (
-                    <Card key={video.id} className="bg-card border-border hover:border-primary/50 transition-colors overflow-hidden group">
+                    <Card
+                        key={video.id}
+                        className="bg-card border-border hover:border-primary/50 transition-colors overflow-hidden group flex flex-col"
+                    >
+                        {/* ✅ Thumbnail */}
                         <div className="aspect-video bg-gradient-to-br from-primary/20 to-chart-5/20 relative">
                             {video.thumbnail_url ? (
-                                <img src={video.thumbnail_url} alt={video.title} className="w-full h-full object-cover" />
+                                <img
+                                    src={video.thumbnail_url}
+                                    alt={video.title}
+                                    className="w-full h-full object-cover"
+                                />
                             ) : (
                                 <div className="absolute inset-0 flex items-center justify-center">
                                     <Video className="h-12 w-12 text-muted-foreground/50" />
                                 </div>
                             )}
-                            {video.predicted_views && video.actual_views && (
-                                <div className="absolute top-2 right-2">
-                                    <Badge className={(Math.abs(video.predicted_views - video.actual_views) / video.actual_views) * 100 <= 10 ? "bg-success" : "bg-warning"}>
-                                        {((1 - Math.abs(video.predicted_views - video.actual_views) / video.actual_views) * 100).toFixed(0)}% accuracy
-                                    </Badge>
-                                </div>
-                            )}
+
+                            <div className="absolute top-2 right-2">
+                                <Badge
+                                    variant="secondary"
+                                    className={video.is_uploaded ? "bg-success/20" : "bg-warning/20"}
+                                >
+                                    {video.is_draft
+                                        ? "Draft"
+                                        : video.is_uploaded
+                                            ? "Uploaded"
+                                            : "Pending"}
+                                </Badge>
+                            </div>
                         </div>
-                        <CardContent className="p-4">
-                            <h3 className="font-semibold mb-2 line-clamp-2 group-hover:text-primary transition-colors">
-                                {video.title}
-                            </h3>
-                            <p className="text-sm text-muted-foreground mb-3">Channel ID: {video.channel_id}</p>
-                            <div className="flex items-center justify-between text-sm">
-                                <div>
-                                    <p className="text-muted-foreground">Actual Views</p>
-                                    <p className="font-bold">{video.actual_views?.toLocaleString() || 'N/A'}</p>
-                                </div>
-                                <div>
-                                    <p className="text-muted-foreground">Predicted</p>
-                                    <p className="font-bold text-primary">{video.predicted_views?.toLocaleString() || 'N/A'}</p>
+
+                        {/* ✅ Content */}
+                        <CardContent className="p-4 flex flex-col flex-grow justify-between">
+                            <div>
+                                <h3 className="font-semibold mb-2 line-clamp-2 group-hover:text-primary transition-colors">
+                                    {video.title || "Untitled Video"}
+                                </h3>
+                                <p className="text-sm text-muted-foreground mb-3">
+                                    Channel ID: {video.channel_id}
+                                </p>
+
+                                <div className="flex items-center justify-between text-sm">
+                                    <div>
+                                        <p className="text-muted-foreground">Views</p>
+                                        <p className="font-bold">
+                                            {video.view_count?.toLocaleString() ?? "N/A"}
+                                        </p>
+                                    </div>
+                                    <div>
+                                        <p className="text-muted-foreground">Likes</p>
+                                        <p className="font-bold">
+                                            {video.like_count?.toLocaleString() ?? "N/A"}
+                                        </p>
+                                    </div>
+                                    <div>
+                                        <p className="text-muted-foreground">Comments</p>
+                                        <p className="font-bold">
+                                            {video.comment_count?.toLocaleString() ?? "N/A"}
+                                        </p>
+                                    </div>
                                 </div>
                             </div>
-                            <Badge variant="outline" className="mt-3">
-                                {video.is_draft ? 'Draft' : video.is_uploaded ? 'Uploaded' : 'Pending'}
-                            </Badge>
+
+                            <Button
+                                variant="default"
+                                className="mt-4 w-full flex items-center justify-center gap-2"
+                                onClick={() => handleMakePrediction(video)}
+                            >
+                                Make Prediction <ArrowRight className="w-4 h-4" />
+                            </Button>
                         </CardContent>
                     </Card>
                 ))}

@@ -1,54 +1,49 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { VideosService } from "@/api"; // ✅ use generated API client
+import type { VideoResponse } from "@/api";
 
 interface Props {
     onCreate: (payload: any) => void;
     creating: boolean;
+    /** ✅ Optional prefill video data (e.g., when coming from /videos page) */
+    prefill?: VideoResponse | null;
 }
 
-export default function YoutubeLinkForm({ onCreate, creating }: Props) {
+export default function YoutubeLinkForm({ onCreate, creating, prefill }: Props) {
     const [url, setUrl] = useState("");
     const [fetching, setFetching] = useState(false);
     const [meta, setMeta] = useState<any | null>(null);
+    const [isPrefilled, setIsPrefilled] = useState(false);
 
     /**
-     * ✅ Improved extractVideoId function
-     * Handles:
-     * - Full YouTube links (e.g. https://www.youtube.com/watch?v=dQw4w9WgXcQ)
-     * - Short links (e.g. https://youtu.be/dQw4w9WgXcQ)
-     * - Embedded links (e.g. https://www.youtube.com/embed/dQw4w9WgXcQ)
-     * - Raw video IDs (e.g. dQw4w9WgXcQ)
+     * Extracts a YouTube video ID from:
+     * - Full links (youtube.com/watch?v=...)
+     * - Short links (youtu.be/...)
+     * - Embed links
+     * - Raw 11-char IDs
      */
     const extractVideoId = (input: string): string | null => {
-        // YouTube video ID regex pattern (11 valid characters)
         const videoIdPattern = /^[a-zA-Z0-9_-]{11}$/;
-
         try {
-            // Try parsing as a full URL
             const u = new URL(input);
-
-            // Check if it’s a valid YouTube domain
             const isYoutubeDomain =
                 u.hostname.includes("youtube.com") || u.hostname.includes("youtu.be");
 
             if (!isYoutubeDomain) return null;
 
-            // Handle youtube.com/watch?v=...
             if (u.hostname.includes("youtube.com")) {
                 const vParam = u.searchParams.get("v");
                 if (vParam && videoIdPattern.test(vParam)) return vParam;
 
-                // Handle embedded or share links like /embed/<id>
                 const pathParts = u.pathname.split("/");
                 const possibleId = pathParts[pathParts.length - 1];
                 if (videoIdPattern.test(possibleId)) return possibleId;
             }
 
-            // Handle youtu.be/<id>
             if (u.hostname.includes("youtu.be")) {
                 const possibleId = u.pathname.slice(1);
                 if (videoIdPattern.test(possibleId)) return possibleId;
@@ -56,12 +51,12 @@ export default function YoutubeLinkForm({ onCreate, creating }: Props) {
 
             return null;
         } catch {
-            // If it's not a valid URL, check if it's directly a video ID
             if (videoIdPattern.test(input.trim())) return input.trim();
             return null;
         }
     };
 
+    /** ✅ Fetch metadata from backend */
     const handleFetch = async () => {
         const videoId = extractVideoId(url);
         if (!videoId) {
@@ -73,7 +68,7 @@ export default function YoutubeLinkForm({ onCreate, creating }: Props) {
         try {
             const video = await VideosService.importYoutubeVideoApiV1VideosImportPost(videoId);
 
-            setMeta({
+            const fetched = {
                 title: video.title,
                 description: video.description,
                 thumbnailUrl: video.thumbnail_url,
@@ -82,8 +77,10 @@ export default function YoutubeLinkForm({ onCreate, creating }: Props) {
                 publishedAt: video.published_at,
                 channelId: video.channel_id,
                 privacyStatus: video.privacy_status,
-            });
+            };
 
+            setMeta(fetched);
+            setIsPrefilled(false);
             toast.success("Fetched metadata successfully!");
         } catch (err: any) {
             console.error(err);
@@ -93,6 +90,7 @@ export default function YoutubeLinkForm({ onCreate, creating }: Props) {
         }
     };
 
+    /** ✅ Handle create prediction */
     const handleCreate = () => {
         if (!meta) {
             toast.error("No metadata available");
@@ -106,15 +104,43 @@ export default function YoutubeLinkForm({ onCreate, creating }: Props) {
         });
     };
 
+    /** ✅ Auto-prefill if coming from /videos */
+    useEffect(() => {
+        if (prefill) {
+            setMeta({
+                title: prefill.title,
+                description: prefill.description,
+                thumbnailUrl: prefill.thumbnail_url,
+                videoId: prefill.video_id,
+                duration: prefill.duration,
+                publishedAt: prefill.published_at,
+                channelId: prefill.channel_id,
+                privacyStatus: prefill.privacy_status,
+            });
+
+            if (prefill.video_id)
+                setUrl(`https://www.youtube.com/watch?v=${prefill.video_id}`);
+
+            setIsPrefilled(true);
+        }
+    }, [prefill]);
+
+    /** ✅ Update URL text (keep meta visible) */
+    const handleUrlChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        setUrl(e.target.value);
+        // ⚠️ Don’t clear meta here — user can still see old info until new fetch
+    };
+
     return (
         <div className="space-y-4">
+            {/* === Input Section === */}
             <div className="space-y-2">
                 <Label htmlFor="yt-url">Enter Video URL or ID</Label>
                 <div className="flex flex-col sm:flex-row gap-2">
                     <Input
                         id="yt-url"
                         value={url}
-                        onChange={(e) => setUrl(e.target.value)}
+                        onChange={handleUrlChange}
                         placeholder="https://youtube.com/watch?v=... or dQw4w9WgXcQ"
                         className="flex-1"
                     />
@@ -128,18 +154,23 @@ export default function YoutubeLinkForm({ onCreate, creating }: Props) {
                 </div>
             </div>
 
+            {/* === Metadata Preview === */}
             {meta ? (
-                <div className="flex flex-col md:flex-row gap-4 border border-border p-4 rounded-lg">
+                <div className="flex flex-col md:flex-row gap-4 border border-border p-4 rounded-lg transition-all">
                     <div className="w-full md:w-1/3 flex justify-center items-center">
                         <img
                             src={meta.thumbnailUrl || "https://via.placeholder.com/150"}
                             alt="Thumbnail"
-                            className="rounded-md max-h-40"
+                            className="rounded-md max-h-40 object-cover"
                         />
                     </div>
+
                     <div className="flex-1 space-y-2">
                         <h3 className="font-semibold text-lg">{meta.title}</h3>
-                        <p className="text-sm text-muted-foreground">{meta.description}</p>
+                        <p className="text-sm text-muted-foreground line-clamp-3">
+                            {meta.description}
+                        </p>
+
                         <Button
                             className="bg-primary hover:bg-primary/90"
                             onClick={handleCreate}
@@ -151,7 +182,9 @@ export default function YoutubeLinkForm({ onCreate, creating }: Props) {
                 </div>
             ) : (
                 <div className="border border-dashed border-border p-4 rounded-md text-muted-foreground">
-                    Paste a YouTube URL or video ID and click “Fetch”.
+                    {fetching
+                        ? "Fetching video metadata..."
+                        : "Paste a YouTube URL or video ID and click “Fetch”."}
                 </div>
             )}
         </div>
