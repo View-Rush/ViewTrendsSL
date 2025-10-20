@@ -17,7 +17,7 @@ export default function YoutubeLinkForm({ onCreate, creating, prefill }: Props) 
     const [url, setUrl] = useState("");
     const [fetching, setFetching] = useState(false);
     const [meta, setMeta] = useState<any | null>(null);
-    const [isPrefilled, setIsPrefilled] = useState(false);
+    const [, setIsPrefilled] = useState(false);
 
     /**
      * Extracts a YouTube video ID from:

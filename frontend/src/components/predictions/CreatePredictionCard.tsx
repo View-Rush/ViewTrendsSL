@@ -91,6 +91,7 @@ export default function CreatePredictionCard({ onCreated }: { onCreated?: () => 
                 },
             };
 
+            // @ts-ignore
             const res = await predictionsService.createVideoAndPrediction(payload);
             toast.success(`Prediction created successfully for ${res.video.title}`);
 

@@ -126,6 +126,7 @@ export default function ChannelSelector({ value, onChange }: Props) {
             subscriber_count: selectedDetails.subscriber_count ?? 0,
             view_count: selectedDetails.view_count ?? 0,
             video_count: selectedDetails.video_count ?? 0,
+            // @ts-ignore
             type: selectedDetails.type,
         });
     };
