@@ -1296,6 +1296,53 @@
         }
       }
     },
+    "/api/v1/predictions/create-combined": {
+      "post": {
+        "tags": [
+          "predictions",
+          "predictions"
+        ],
+        "summary": "Create Video And Prediction",
+        "operationId": "create_video_and_prediction_api_v1_predictions_create_combined_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/VideoPredictionRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VideoPredictionResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ]
+      }
+    },
     "/": {
       "get": {
         "summary": "Root",
@@ -2676,6 +2723,44 @@
         ],
         "title": "VideoListResponse",
         "description": "Schema for list of videos."
+      },
+      "VideoPredictionRequest": {
+        "properties": {
+          "video": {
+            "$ref": "#/components/schemas/VideoCreate",
+            "description": "Video creation payload"
+          },
+          "prediction": {
+            "$ref": "#/components/schemas/PredictionCreate",
+            "description": "Prediction creation payload"
+          }
+        },
+        "type": "object",
+        "required": [
+          "video",
+          "prediction"
+        ],
+        "title": "VideoPredictionRequest",
+        "description": "Combined request payload for creating a video (if not exists)\nand generating a prediction."
+      },
+      "VideoPredictionResponse": {
+        "properties": {
+          "video": {
+            "$ref": "#/components/schemas/VideoResponse",
+            "description": "Created or existing video object"
+          },
+          "prediction": {
+            "$ref": "#/components/schemas/PredictionResponse",
+            "description": "Created prediction object"
+          }
+        },
+        "type": "object",
+        "required": [
+          "video",
+          "prediction"
+        ],
+        "title": "VideoPredictionResponse",
+        "description": "Combined response payload for video creation + prediction generation."
       },
       "VideoResponse": {
         "properties": {

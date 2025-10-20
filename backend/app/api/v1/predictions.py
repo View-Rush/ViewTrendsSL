@@ -15,6 +15,8 @@ from app.schemas import (
 )
 from app.services import PredictionService, VideoService, ChannelService
 from app.services.ml_service import MLService
+from app.schemas.orchestrator import VideoPredictionResponse, VideoPredictionRequest
+from app.services.forecasting_orchestrator_service import ForecastingOrchestratorService
 
 router = APIRouter(tags=["predictions"])
 
@@ -114,3 +116,21 @@ def update_prediction_actual_views(
 
     # The returned 'prediction' should already contain updated daily views, factors, etc.
     return prediction
+
+@router.post(
+    "/create-combined",
+    response_model=VideoPredictionResponse,
+    status_code=status.HTTP_201_CREATED
+)
+def create_video_and_prediction(
+    payload: VideoPredictionRequest,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_active_user),
+):
+    result = ForecastingOrchestratorService.create_video_and_prediction(
+        db=db,
+        video_data=payload.video,
+        prediction_data=payload.prediction,
+        user_id=current_user.id
+    )
+    return VideoPredictionResponse(video=result["video"], prediction=result["prediction"])
