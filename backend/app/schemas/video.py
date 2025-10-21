@@ -113,3 +113,13 @@ class ThumbnailAnalysisRequest(BaseModel):
 class ThumbnailAnalysisResponse(BaseModel):
     """Schema for thumbnail analysis response."""
     analysis: dict[str, Any] = Field(..., description="Analysis results")
+
+
+class ThumbnailUploadResponse(BaseModel):
+    """Response schema for thumbnail upload."""
+    public_url: str = Field(..., description="Public URL of the uploaded thumbnail")
+    path: str = Field(..., description="Path of the file in Supabase Storage")
+
+class ThumbnailUploadRequest(BaseModel):
+    """Optional request schema (if sending metadata in addition to file)."""
+    user_id: Optional[str] = Field(default="public", description="Uploader user ID or folder name")

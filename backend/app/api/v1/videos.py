@@ -1,5 +1,5 @@
 """Video API endpoints."""
-from fastapi import APIRouter, Depends, Query, status
+from fastapi import APIRouter, Depends, Query, status, UploadFile, Form
 from sqlalchemy.orm import Session
 from typing import Optional
 
@@ -14,6 +14,8 @@ from app.schemas import (
     ThumbnailAnalysisResponse,
 )
 from app.services import VideoService
+from app.schemas.video import ThumbnailUploadResponse
+from app.services.thumbnail_service import upload_thumbnail_to_supabase
 
 router = APIRouter(tags=["videos"])
 
@@ -128,4 +130,41 @@ def import_youtube_video(
 ):
     """Import a video from YouTube into the user's library."""
     video = VideoService.import_from_youtube(db, input_value, current_user.id)
+    return video
+
+# Upload a thumbnail (standalone)
+@router.post(
+    "/upload-thumbnail",
+    response_model=ThumbnailUploadResponse,
+    summary="Upload a thumbnail image for a video",
+    description="Uploads a thumbnail to Supabase Storage and returns its public URL."
+)
+async def upload_thumbnail(
+    file: UploadFile,
+    user_id: str = Form("public"),
+    current_user: User = Depends(get_current_active_user),
+):
+    """Upload thumbnail via Supabase Storage."""
+    result = await upload_thumbnail_to_supabase(file, user_id)
+    return ThumbnailUploadResponse(**result)
+
+
+# Upload and attach thumbnail directly to an existing video
+@router.post(
+    "/{video_id}/upload-thumbnail",
+    response_model=VideoResponse,
+    summary="Upload and attach a thumbnail to a specific video",
+    description="Uploads a thumbnail to Supabase Storage and updates the video record."
+)
+async def upload_thumbnail_for_video(
+    video_id: int,
+    file: UploadFile,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_active_user),
+):
+    """Uploads a thumbnail and updates the video.thumbnail_url field."""
+    result = await upload_thumbnail_to_supabase(file, str(current_user.id))
+    video = VideoService.update_video(
+        db, video_id, {"thumbnail_url": result["public_url"]}, current_user.id
+    )
     return video

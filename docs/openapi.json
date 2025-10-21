@@ -1003,6 +1003,113 @@
         }
       }
     },
+    "/api/v1/videos/upload-thumbnail": {
+      "post": {
+        "tags": [
+          "videos",
+          "videos"
+        ],
+        "summary": "Upload a thumbnail image for a video",
+        "description": "Uploads a thumbnail to Supabase Storage and returns its public URL.",
+        "operationId": "upload_thumbnail_api_v1_videos_upload_thumbnail_post",
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_upload_thumbnail_api_v1_videos_upload_thumbnail_post"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ThumbnailUploadResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/videos/{video_id}/upload-thumbnail": {
+      "post": {
+        "tags": [
+          "videos",
+          "videos"
+        ],
+        "summary": "Upload and attach a thumbnail to a specific video",
+        "description": "Uploads a thumbnail to Supabase Storage and updates the video record.",
+        "operationId": "upload_thumbnail_for_video_api_v1_videos__video_id__upload_thumbnail_post",
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "video_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Video Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_upload_thumbnail_for_video_api_v1_videos__video_id__upload_thumbnail_post"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VideoResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/predictions/": {
       "post": {
         "tags": [
@@ -1582,6 +1689,39 @@
           "password"
         ],
         "title": "Body_login_api_v1_auth_login_post"
+      },
+      "Body_upload_thumbnail_api_v1_videos_upload_thumbnail_post": {
+        "properties": {
+          "file": {
+            "type": "string",
+            "format": "binary",
+            "title": "File"
+          },
+          "user_id": {
+            "type": "string",
+            "title": "User Id",
+            "default": "public"
+          }
+        },
+        "type": "object",
+        "required": [
+          "file"
+        ],
+        "title": "Body_upload_thumbnail_api_v1_videos_upload_thumbnail_post"
+      },
+      "Body_upload_thumbnail_for_video_api_v1_videos__video_id__upload_thumbnail_post": {
+        "properties": {
+          "file": {
+            "type": "string",
+            "format": "binary",
+            "title": "File"
+          }
+        },
+        "type": "object",
+        "required": [
+          "file"
+        ],
+        "title": "Body_upload_thumbnail_for_video_api_v1_videos__video_id__upload_thumbnail_post"
       },
       "ChannelListResponse": {
         "properties": {
@@ -2328,6 +2468,27 @@
         ],
         "title": "ThumbnailAnalysisResponse",
         "description": "Schema for thumbnail analysis response."
+      },
+      "ThumbnailUploadResponse": {
+        "properties": {
+          "public_url": {
+            "type": "string",
+            "title": "Public Url",
+            "description": "Public URL of the uploaded thumbnail"
+          },
+          "path": {
+            "type": "string",
+            "title": "Path",
+            "description": "Path of the file in Supabase Storage"
+          }
+        },
+        "type": "object",
+        "required": [
+          "public_url",
+          "path"
+        ],
+        "title": "ThumbnailUploadResponse",
+        "description": "Response schema for thumbnail upload."
       },
       "Token": {
         "properties": {
