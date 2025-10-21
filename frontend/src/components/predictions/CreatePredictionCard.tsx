@@ -34,16 +34,31 @@ export default function CreatePredictionCard({ onCreated }: { onCreated?: () => 
     const [editMode, setEditMode] = useState(false);
     const [videoTitle, setVideoTitle] = useState<string>("");
 
+    // Persist manual metadata and thumbnail across mode switches
+    const [manualMetadata, setManualMetadata] = useState<any>(null);
+
     const videoId = searchParams.get("videoId");
 
+    // Load video when navigated from /videos or search params
     useEffect(() => {
         if (!videoId) return;
         const fetchVideo = async () => {
             try {
                 const v = await videosService.getVideoById(Number(videoId));
                 setVideo(v);
-                if (v.source_type === "youtube") setMode("link");
-                else setMode("manual");
+
+                if (v.channel_id) {
+                    setSelectedChannel({ id: v.channel_id } as Channel);
+                }
+
+                if (v.source_type === "youtube") {
+                    setManualMetadata(null);
+                    setThumbnailFile(null);
+                    setMode("link");
+                } else {
+                    setMode("manual");
+                }
+
                 toast.success(`Loaded video: ${v.title}`);
             } catch {
                 toast.error("Failed to load video details");
@@ -55,15 +70,36 @@ export default function CreatePredictionCard({ onCreated }: { onCreated?: () => 
     const handleModeChange = (newMode: "link" | "manual" | "fromVideos") => {
         setMode(newMode);
         navigate(`/predictions/create/${newMode}`);
-        setVideoTitle('');
-        setVideo(null);
-        setPredictedViews(null);
-        setEditMode(false);
+
+        const hasYoutubeVideo = !!video && video.source_type === "youtube";
+        const switchingToManual = newMode === "manual";
+
+        if (hasYoutubeVideo && !switchingToManual) {
+            setVideo(null);
+            setVideoTitle("");
+            setPredictedViews(null);
+            setEditMode(false);
+            setManualMetadata(null);
+            setThumbnailFile(null);
+        }
     };
 
+    // This callback is triggered when YoutubeVideoForm finishes fetching metadata
+    const handleVideoFetched = (fetchedVideo: VideoResponse) => {
+        setVideo(fetchedVideo);
+        if (fetchedVideo.channel_id) {
+            setSelectedChannel({ id: fetchedVideo.channel_id } as Channel);
+        }
+        toast.success(`Fetched metadata for ${fetchedVideo.title}`);
+    };
+
+    // Create prediction from either manual or youtube video data
     const handleCreatePrediction = async (formPayload: any) => {
-        if (!selectedChannel) {
-            toast.error("Please select a channel before creating a prediction");
+        const channelId: string | number | undefined =
+            selectedChannel?.id || video?.channel_id;
+
+        if (!channelId) {
+            toast.error("Channel not found. Please select or ensure the video has a channel ID.");
             return;
         }
 
@@ -71,37 +107,35 @@ export default function CreatePredictionCard({ onCreated }: { onCreated?: () => 
         try {
             const payload = {
                 video: {
-                    title: formPayload.title,
-                    description: formPayload.description,
-                    channel_id: selectedChannel.id,
-                    duration: formPayload.duration,
-                    category_id: formPayload.category,
-                    default_language: formPayload.language,
-                    tags: formPayload.tags,
-                    published_at: formPayload.published_at,
-                    thumbnail_url: formPayload.thumbnail_url,
+                    title: formPayload.title || video?.title,
+                    description: formPayload.description || video?.description,
+                    channel_id: channelId,
+                    duration: formPayload.duration || video?.duration,
+                    category_id: formPayload.category || video?.category_id,
+                    default_language: formPayload.language || video?.default_language,
+                    tags: formPayload.tags || video?.tags,
+                    published_at: formPayload.published_at || video?.published_at,
+                    thumbnail_url: formPayload.thumbnail_url || video?.thumbnail_url,
                     is_draft: true,
                     is_uploaded: false,
-                    source_type: "manual",
+                    source_type: video?.source_type || "manual",
                 },
                 prediction: {
                     video_id: 0,
-                    channel_id: selectedChannel.id,
+                    channel_id: channelId,
                     days_after_upload: 0,
                 },
             };
 
-            // @ts-ignore
             const res = await predictionsService.createVideoAndPrediction(payload);
             toast.success(`Prediction created successfully for ${res.video.title}`);
 
             const predictions = res.prediction.prediction_breakdown;
-            if (predictions && predictions.daily_predictions && Array.isArray(predictions.daily_predictions)) {
+            if (predictions?.daily_predictions?.length)
                 setPredictedViews(predictions.daily_predictions);
-            }
 
             setVideo(res.video);
-            setVideoTitle(res.video.title ? res.video.title : "");
+            setVideoTitle(res.video.title || "");
             setEditMode(true);
             onCreated?.();
         } catch (error: any) {
@@ -112,37 +146,31 @@ export default function CreatePredictionCard({ onCreated }: { onCreated?: () => 
         }
     };
 
-    const handleGoToVideos = () => {
-        navigate("/videos", { state: { from: "predictions" } });
-    };
-
-    const handleEdit = () => {
-        setEditMode(false);
-    };
+    const handleGoToVideos = () => navigate("/videos", { state: { from: "predictions" } });
+    const handleEdit = () => setEditMode(false);
 
     return (
         <Card className="bg-card border-border">
             <CardHeader className="!flex !flex-row !items-start !justify-between !pb-2">
                 <CardTitle className="text-left leading-tight">
-                    {editMode
-                        ? (
-                            <>
-                                Predictions for{" "}
-                                <span className="text-primary font-semibold">
-            "{videoTitle?.length > 40 ? videoTitle.slice(0, 40) + "..." : videoTitle}"
-          </span>
-                            </>
-                        )
-                        : "Create New Prediction"}
+                    {editMode ? (
+                        <>
+                            Predictions for{" "}
+                            <span className="text-primary font-semibold">
+                "
+                                {videoTitle?.length > 40
+                                    ? videoTitle.slice(0, 40) + "..."
+                                    : videoTitle}
+                                "
+              </span>
+                        </>
+                    ) : (
+                        "Create New Prediction"
+                    )}
                 </CardTitle>
 
                 {editMode && (
-                    <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={handleEdit}
-                        className="mt-1"
-                    >
+                    <Button variant="outline" size="sm" onClick={handleEdit} className="mt-1">
                         <Pencil className="w-4 h-4 mr-2" /> Edit
                     </Button>
                 )}
@@ -157,6 +185,7 @@ export default function CreatePredictionCard({ onCreated }: { onCreated?: () => 
                             <YoutubeVideoForm
                                 onCreate={handleCreatePrediction}
                                 creating={creating}
+                                onVideoFetched={handleVideoFetched}
                                 prefill={video}
                             />
                         )}
@@ -169,7 +198,7 @@ export default function CreatePredictionCard({ onCreated }: { onCreated?: () => 
                                 setSelectedChannel={setSelectedChannel}
                                 thumbnailFile={thumbnailFile}
                                 setThumbnailFile={setThumbnailFile}
-                                prefill={video}
+                                prefill={manualMetadata || video}
                             />
                         )}
 
@@ -178,11 +207,7 @@ export default function CreatePredictionCard({ onCreated }: { onCreated?: () => 
                         )}
                     </>
                 ) : (
-                    <VideoSummaryCard
-                        video={video}
-                        predictedViews={predictedViews}
-
-                    />
+                    <VideoSummaryCard video={video} predictedViews={predictedViews} />
                 )}
             </CardContent>
         </Card>

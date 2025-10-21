@@ -102,7 +102,7 @@ const Dashboard = () => {
     return (
         <div className="flex flex-col items-center justify-center h-screen space-y-3">
           <p className="text-red-500 font-medium">
-            ⚠️ {channelError || predictionError || videoError}
+            {channelError || predictionError || videoError}
           </p>
           <Button
               onClick={() =>
