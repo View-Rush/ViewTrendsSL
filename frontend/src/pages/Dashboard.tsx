@@ -1,12 +1,35 @@
-import { TrendingUp, Video, Users, Target, Plus, VideoIcon, RefreshCw, PlayCircle, CheckCircle } from "lucide-react";
+import { useEffect } from "react";
+import {
+  TrendingUp,
+  Video,
+  Users,
+  Target,
+  Plus,
+  VideoIcon,
+  RefreshCw,
+  PlayCircle,
+  CheckCircle,
+} from "lucide-react";
 import { StatsCard } from "@/components/dashboard/StatsCard";
 import { PredictionCard } from "@/components/dashboard/PredictionCard";
 import { ActivityItem } from "@/components/dashboard/ActivityItem";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
+import {
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+} from "recharts";
 import { useNavigate } from "react-router-dom";
+import { useChannelStore } from "@/stores/channelStore";
+import { usePredictionStore } from "@/stores/predictionStore";
+import { useVideoStore } from "@/stores/videoStore";
+import { toast } from "sonner";
 
 const accuracyData = [
   { name: "Week 1", accuracy: 78 },
@@ -18,13 +41,87 @@ const accuracyData = [
 const Dashboard = () => {
   const navigate = useNavigate();
 
+  // Zustand stores
+  const {
+    channels,
+    loadChannels,
+    loading: channelLoading,
+    error: channelError,
+  } = useChannelStore();
+
+  const {
+    predictions,
+    loadPredictions,
+    loading: predictionLoading,
+    error: predictionError,
+  } = usePredictionStore();
+
+  const {
+    videos,
+    loadVideos,
+    loading: videoLoading,
+    error: videoError,
+  } = useVideoStore();
+
+  useEffect(() => {
+    // Load all three datasets in parallel
+    Promise.all([loadChannels(), loadPredictions(), loadVideos()]).catch((err) => {
+      console.error("Dashboard data load failed:", err);
+      toast.error("Failed to load dashboard data");
+    });
+  }, [loadChannels, loadPredictions, loadVideos]);
+
+  // --- Aggregated metrics ---
+  const totalChannels = channels.length;
+  const totalVideos = videos.length;
+  const totalViews = videos.reduce((sum, v) => sum + (v.view_count || 0), 0);
+  const totalPredictions = predictions.length;
+  const completedPredictions = predictions.filter((p) => p.status === "completed");
+
+  const calculateAccuracy = (predicted: number, actual: number) =>
+      actual === 0 ? 0 : ((1 - Math.abs(predicted - actual) / actual) * 100).toFixed(0);
+
+  const avgAccuracy =
+      completedPredictions.filter((p) => p.predicted_views && p.actual_views).length > 0
+          ? (
+              completedPredictions
+                  .filter((p) => p.predicted_views && p.actual_views)
+                  .reduce(
+                      (sum, p) =>
+                          sum + parseFloat(calculateAccuracy(p.predicted_views!, p.actual_views!)),
+                      0
+                  ) /
+              completedPredictions.filter((p) => p.predicted_views && p.actual_views).length
+          ).toFixed(1)
+          : 0;
+
+  const loading = channelLoading || predictionLoading || videoLoading;
+
+  // --- Error handling ---
+  if (channelError || predictionError || videoError) {
+    return (
+        <div className="flex flex-col items-center justify-center h-screen space-y-3">
+          <p className="text-red-500 font-medium">
+            ⚠️ {channelError || predictionError || videoError}
+          </p>
+          <Button
+              onClick={() =>
+                  Promise.all([loadChannels(true), loadPredictions(true), loadVideos(true)])
+              }
+          >
+            Retry
+          </Button>
+        </div>
+    );
+  }
+
   return (
       <div className="p-6 space-y-6">
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           <StatsCard
               title="Total Predictions"
-              value="127"
+              value={loading ? "..." : totalPredictions.toString()}
               change="+5% from last month"
               isPositive={true}
               icon={Target}
@@ -32,7 +129,7 @@ const Dashboard = () => {
           />
           <StatsCard
               title="Avg. Accuracy"
-              value="85.4%"
+              value={loading ? "..." : `${avgAccuracy}%`}
               change="+2.1% from last month"
               isPositive={true}
               icon={TrendingUp}
@@ -40,16 +137,20 @@ const Dashboard = () => {
           />
           <StatsCard
               title="Active Channels"
-              value="8"
-              change="+1 new this month"
+              value={loading ? "..." : totalChannels.toString()}
+              change={
+                totalChannels > 0 ? `Tracking ${totalChannels} channels` : "No data"
+              }
               isPositive={true}
               icon={Users}
               iconColor="bg-chart-4/20 text-chart-4"
           />
           <StatsCard
               title="Videos Analyzed"
-              value="243"
-              change="+18 from last month"
+              value={loading ? "..." : totalVideos.toLocaleString()}
+              change={
+                totalVideos > 0 ? `${totalVideos.toLocaleString()} total` : "No data yet"
+              }
               isPositive={true}
               icon={Video}
               iconColor="bg-chart-3/20 text-chart-3"
@@ -61,7 +162,7 @@ const Dashboard = () => {
           <CardHeader>
             <CardTitle className="text-xl">Quick Actions</CardTitle>
           </CardHeader>
-          <CardContent className="flex gap-3">
+          <CardContent className="flex gap-3 flex-wrap">
             <Button
                 className="bg-primary hover:bg-primary/90"
                 onClick={() => navigate("/predictions")}
@@ -80,14 +181,18 @@ const Dashboard = () => {
             <Button
                 variant="outline"
                 className="border-border"
-                onClick={() => navigate("/channels")}
+                onClick={() =>
+                    Promise.all([loadChannels(true), loadPredictions(true), loadVideos(true)])
+                }
+                disabled={loading}
             >
-              <RefreshCw className="mr-2 h-4 w-4" />
-              Sync Channel
+              <RefreshCw className={`mr-2 h-4 w-4 ${loading ? "animate-spin" : ""}`} />
+              Sync All
             </Button>
           </CardContent>
         </Card>
 
+        {/* Charts & Recent Predictions */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Prediction Accuracy Chart */}
           <Card className="lg:col-span-2 bg-card border-border">
@@ -128,19 +233,42 @@ const Dashboard = () => {
           <Card className="bg-card border-border">
             <CardHeader className="flex flex-row items-center justify-between">
               <CardTitle className="text-xl">Recent Predictions</CardTitle>
-              <Button variant="link" className="text-primary" onClick={() => navigate("/predictions")}>
+              <Button
+                  variant="link"
+                  className="text-primary"
+                  onClick={() => navigate("/predictions")}
+              >
                 View all
               </Button>
             </CardHeader>
             <CardContent className="space-y-3">
-              <PredictionCard channel="Tech Insights Channel" accuracy={8.3} />
-              <PredictionCard channel="Travel Vibes" accuracy={-3.7} />
-              <PredictionCard channel="Culinary Masters" accuracy={12.1} />
-              <PredictionCard channel="FitLife" accuracy={0} status="Pending • 3 days left" />
+              {predictions.length === 0 ? (
+                  <p className="text-muted-foreground text-sm">
+                    No recent predictions yet.
+                  </p>
+              ) : (
+                  predictions.slice(0, 4).map((p) => (
+                      <PredictionCard
+                          key={p.id}
+                          channel={`Video ${p.video_id}`}
+                          accuracy={
+                            p.actual_views && p.predicted_views
+                                ? parseFloat(calculateAccuracy(p.predicted_views, p.actual_views))
+                                : 0
+                          }
+                          status={
+                            p.status === "completed"
+                                ? "Completed"
+                                : "Pending • in progress"
+                          }
+                      />
+                  ))
+              )}
             </CardContent>
           </Card>
         </div>
 
+        {/* Channel & Activity Section */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Channel Performance */}
           <Card className="lg:col-span-2 bg-card border-border">
@@ -153,27 +281,35 @@ const Dashboard = () => {
               </select>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="space-y-2">
-                <div className="flex justify-between items-center">
-                  <span className="text-sm font-medium">Tech Insights</span>
-                  <span className="text-sm font-bold text-success">92%</span>
-                </div>
-                <Progress value={92} className="h-2" />
-              </div>
-              <div className="space-y-2">
-                <div className="flex justify-between items-center">
-                  <span className="text-sm font-medium">Travel Vibes</span>
-                  <span className="text-sm font-bold text-success">84%</span>
-                </div>
-                <Progress value={84} className="h-2" />
-              </div>
-              <div className="space-y-2">
-                <div className="flex justify-between items-center">
-                  <span className="text-sm font-medium">FitLife</span>
-                  <span className="text-sm font-bold text-warning">78%</span>
-                </div>
-                <Progress value={78} className="h-2" />
-              </div>
+              {channels.length === 0 ? (
+                  <p className="text-muted-foreground text-sm">
+                    No channels available. Try syncing channels first.
+                  </p>
+              ) : (
+                  channels.slice(0, 3).map((channel) => (
+                      <div key={channel.id} className="space-y-2">
+                        <div className="flex justify-between items-center">
+                    <span className="text-sm font-medium">
+                      {channel.channel_title}
+                    </span>
+                          <span className="text-sm font-bold text-success">
+                      {Math.min(
+                          100,
+                          ((channel.view_count || 0) / 1000000) * 100
+                      ).toFixed(0)}
+                            %
+                    </span>
+                        </div>
+                        <Progress
+                            value={Math.min(
+                                100,
+                                ((channel.view_count || 0) / 1000000) * 100
+                            )}
+                            className="h-2"
+                        />
+                      </div>
+                  ))
+              )}
             </CardContent>
           </Card>
 
@@ -181,7 +317,11 @@ const Dashboard = () => {
           <Card className="bg-card border-border">
             <CardHeader className="flex flex-row items-center justify-between">
               <CardTitle className="text-xl">Recent Activity</CardTitle>
-              <Button variant="link" className="text-primary" onClick={() => navigate("/activities")}>
+              <Button
+                  variant="link"
+                  className="text-primary"
+                  onClick={() => navigate("/activities")}
+              >
                 View all
               </Button>
             </CardHeader>
