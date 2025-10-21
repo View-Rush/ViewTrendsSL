@@ -5,13 +5,13 @@ import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import PredictionModeSelector from "./PredictionModeSelector";
 import YoutubeVideoForm from "./YoutubeLinkForm";
-import YoutubeMetadataForm from "./YoutubeMetadataForm.tsx";
+import YoutubeMetadataForm from "./YoutubeMetadataForm";
 import type { Channel } from "./types";
-import FromVideosSection from "@/components/predictions/FromVideosSection.tsx";
+import FromVideosSection from "@/components/predictions/FromVideosSection";
 import type { VideoResponse } from "@/api";
-import { videosService } from "@/services/videos.service.ts";
-import { predictionsService } from "@/services/predictions.service.ts";
-import VideoSummaryCard from "@/components/predictions/VideoSummaryCard.tsx";
+import { videosService } from "@/services/videos.service";
+import { predictionsService } from "@/services/predictions.service";
+import VideoSummaryCard from "@/components/predictions/VideoSummaryCard";
 import { Pencil } from "lucide-react";
 
 export default function CreatePredictionCard({ onCreated }: { onCreated?: () => void }) {
@@ -34,12 +34,10 @@ export default function CreatePredictionCard({ onCreated }: { onCreated?: () => 
     const [editMode, setEditMode] = useState(false);
     const [videoTitle, setVideoTitle] = useState<string>("");
 
-    // Persist manual metadata and thumbnail across mode switches
     const [manualMetadata, setManualMetadata] = useState<any>(null);
 
     const videoId = searchParams.get("videoId");
 
-    // Load video when navigated from /videos or search params
     useEffect(() => {
         if (!videoId) return;
         const fetchVideo = async () => {
@@ -84,7 +82,6 @@ export default function CreatePredictionCard({ onCreated }: { onCreated?: () => 
         }
     };
 
-    // This callback is triggered when YoutubeVideoForm finishes fetching metadata
     const handleVideoFetched = (fetchedVideo: VideoResponse) => {
         setVideo(fetchedVideo);
         if (fetchedVideo.channel_id) {
@@ -93,7 +90,6 @@ export default function CreatePredictionCard({ onCreated }: { onCreated?: () => 
         toast.success(`Fetched metadata for ${fetchedVideo.title}`);
     };
 
-    // Create prediction from either manual or youtube video data
     const handleCreatePrediction = async (formPayload: any) => {
         const channelId: string | number | undefined =
             selectedChannel?.id || video?.channel_id;
@@ -118,7 +114,7 @@ export default function CreatePredictionCard({ onCreated }: { onCreated?: () => 
                     thumbnail_url: formPayload.thumbnail_url || video?.thumbnail_url,
                     is_draft: true,
                     is_uploaded: false,
-                    source_type: video?.source_type || "manual",
+                    source_type: (video?.source_type as "manual" | "youtube") || "manual", // ✅ FIXED
                 },
                 prediction: {
                     video_id: 0,
@@ -127,7 +123,7 @@ export default function CreatePredictionCard({ onCreated }: { onCreated?: () => 
                 },
             };
 
-            const res = await predictionsService.createVideoAndPrediction(payload);
+            const res = await predictionsService.createVideoAndPrediction(payload as any);
             toast.success(`Prediction created successfully for ${res.video.title}`);
 
             const predictions = res.prediction.prediction_breakdown;
@@ -145,9 +141,6 @@ export default function CreatePredictionCard({ onCreated }: { onCreated?: () => 
             setCreating(false);
         }
     };
-
-    const handleGoToVideos = () => navigate("/videos", { state: { from: "predictions" } });
-    const handleEdit = () => setEditMode(false);
 
     return (
         <Card className="bg-card border-border">
@@ -170,7 +163,7 @@ export default function CreatePredictionCard({ onCreated }: { onCreated?: () => 
                 </CardTitle>
 
                 {editMode && (
-                    <Button variant="outline" size="sm" onClick={handleEdit} className="mt-1">
+                    <Button variant="outline" size="sm" onClick={() => setEditMode(false)} className="mt-1">
                         <Pencil className="w-4 h-4 mr-2" /> Edit
                     </Button>
                 )}
@@ -203,7 +196,7 @@ export default function CreatePredictionCard({ onCreated }: { onCreated?: () => 
                         )}
 
                         {mode === "fromVideos" && (
-                            <FromVideosSection onGoToVideos={handleGoToVideos} />
+                            <FromVideosSection onGoToVideos={() => navigate("/videos", { state: { from: "predictions" } })} />
                         )}
                     </>
                 ) : (

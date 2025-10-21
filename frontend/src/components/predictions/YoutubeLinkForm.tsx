@@ -74,7 +74,7 @@ export default function YoutubeVideoForm({
                 privacyStatus: video.privacy_status,
             };
 
-            setMeta(fetched);
+            setMeta(fetched as any);
             onVideoFetched(video);
             toast.success("Fetched metadata successfully!");
         } catch (err: any) {

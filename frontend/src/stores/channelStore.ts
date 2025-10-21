@@ -16,7 +16,7 @@ export const useChannelStore = create<ChannelState>((set, get) => ({
     error: null,
 
     loadChannels: async (force = false) => {
-        const { channels, loading } = get();
+        const { channels,  } = get();
         if (channels.length > 0 && !force) return;
 
         set({ loading: true, error: null });

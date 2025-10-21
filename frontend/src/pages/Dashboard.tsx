@@ -74,12 +74,14 @@ const Dashboard = () => {
   // --- Aggregated metrics ---
   const totalChannels = channels.length;
   const totalVideos = videos.length;
-  const totalViews = videos.reduce((sum, v) => sum + (v.view_count || 0), 0);
   const totalPredictions = predictions.length;
   const completedPredictions = predictions.filter((p) => p.status === "completed");
 
-  const calculateAccuracy = (predicted: number, actual: number) =>
-      actual === 0 ? 0 : ((1 - Math.abs(predicted - actual) / actual) * 100).toFixed(0);
+  // ✅ Make sure return type is string to avoid TS type mismatch errors
+  const calculateAccuracy = (predicted: number, actual: number): string => {
+    if (actual === 0) return "0";
+    return ((1 - Math.abs(predicted - actual) / actual) * 100).toFixed(0);
+  };
 
   const avgAccuracy =
       completedPredictions.filter((p) => p.predicted_views && p.actual_views).length > 0
@@ -88,12 +90,13 @@ const Dashboard = () => {
                   .filter((p) => p.predicted_views && p.actual_views)
                   .reduce(
                       (sum, p) =>
-                          sum + parseFloat(calculateAccuracy(p.predicted_views!, p.actual_views!)),
+                          sum +
+                          parseFloat(calculateAccuracy(p.predicted_views!, p.actual_views!)),
                       0
                   ) /
               completedPredictions.filter((p) => p.predicted_views && p.actual_views).length
           ).toFixed(1)
-          : 0;
+          : "0";
 
   const loading = channelLoading || predictionLoading || videoLoading;
 
@@ -123,7 +126,7 @@ const Dashboard = () => {
               title="Total Predictions"
               value={loading ? "..." : totalPredictions.toString()}
               change="+5% from last month"
-              isPositive={true}
+              isPositive
               icon={Target}
               iconColor="bg-chart-1/20 text-chart-1"
           />
@@ -131,7 +134,7 @@ const Dashboard = () => {
               title="Avg. Accuracy"
               value={loading ? "..." : `${avgAccuracy}%`}
               change="+2.1% from last month"
-              isPositive={true}
+              isPositive
               icon={TrendingUp}
               iconColor="bg-chart-2/20 text-chart-2"
           />
@@ -139,9 +142,11 @@ const Dashboard = () => {
               title="Active Channels"
               value={loading ? "..." : totalChannels.toString()}
               change={
-                totalChannels > 0 ? `Tracking ${totalChannels} channels` : "No data"
+                totalChannels > 0
+                    ? `Tracking ${totalChannels} channels`
+                    : "No data available"
               }
-              isPositive={true}
+              isPositive
               icon={Users}
               iconColor="bg-chart-4/20 text-chart-4"
           />
@@ -149,9 +154,11 @@ const Dashboard = () => {
               title="Videos Analyzed"
               value={loading ? "..." : totalVideos.toLocaleString()}
               change={
-                totalVideos > 0 ? `${totalVideos.toLocaleString()} total` : "No data yet"
+                totalVideos > 0
+                    ? `${totalVideos.toLocaleString()} total`
+                    : "No videos yet"
               }
-              isPositive={true}
+              isPositive
               icon={Video}
               iconColor="bg-chart-3/20 text-chart-3"
           />
@@ -253,7 +260,9 @@ const Dashboard = () => {
                           channel={`Video ${p.video_id}`}
                           accuracy={
                             p.actual_views && p.predicted_views
-                                ? parseFloat(calculateAccuracy(p.predicted_views, p.actual_views))
+                                ? parseFloat(
+                                    calculateAccuracy(p.predicted_views, p.actual_views)
+                                )
                                 : 0
                           }
                           status={
@@ -268,7 +277,7 @@ const Dashboard = () => {
           </Card>
         </div>
 
-        {/* Channel & Activity Section */}
+        {/* Channel Performance & Recent Activity */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Channel Performance */}
           <Card className="lg:col-span-2 bg-card border-border">
@@ -295,7 +304,7 @@ const Dashboard = () => {
                           <span className="text-sm font-bold text-success">
                       {Math.min(
                           100,
-                          ((channel.view_count || 0) / 1000000) * 100
+                          ((channel.view_count || 0) / 1_000_000) * 100
                       ).toFixed(0)}
                             %
                     </span>
@@ -303,7 +312,7 @@ const Dashboard = () => {
                         <Progress
                             value={Math.min(
                                 100,
-                                ((channel.view_count || 0) / 1000000) * 100
+                                ((channel.view_count || 0) / 1_000_000) * 100
                             )}
                             className="h-2"
                         />
