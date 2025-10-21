@@ -79,7 +79,7 @@ export default function CreatePredictionCard({ onCreated }: { onCreated?: () => 
                     default_language: formPayload.language,
                     tags: formPayload.tags,
                     published_at: formPayload.published_at,
-                    thumbnail_url: formPayload.thumbnail,
+                    thumbnail_url: formPayload.thumbnail_url,
                     is_draft: true,
                     is_uploaded: false,
                     source_type: "manual",

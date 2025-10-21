@@ -7,6 +7,8 @@ import {
     type ThumbnailAnalysisResponse,
     type VideoSourceType,
     VideosService,
+    Body_upload_thumbnail_for_video_api_v1_videos__video_id__upload_thumbnail_post,
+    Body_upload_thumbnail_api_v1_videos_upload_thumbnail_post, ThumbnailUploadResponse,
 } from '@/api';
 
 export const videosService = {
@@ -52,5 +54,26 @@ export const videosService = {
 
     async importYoutubeVideo(videoId: string): Promise<VideoResponse> {
         return VideosService.importYoutubeVideoApiV1VideosImportPost(videoId);
+    },
+
+    async uploadThumbnail(
+        file: File,
+        userId: string = 'public',
+    ): Promise<ThumbnailUploadResponse> {
+        const formData: Body_upload_thumbnail_api_v1_videos_upload_thumbnail_post = {
+            file,
+            user_id: userId,
+        };
+        return VideosService.uploadThumbnailApiV1VideosUploadThumbnailPost(formData);
+    },
+
+    async uploadThumbnailForVideo(
+        videoId: number,
+        file: File,
+    ): Promise<VideoResponse> {
+        const formData: Body_upload_thumbnail_for_video_api_v1_videos__video_id__upload_thumbnail_post = {
+            file,
+        };
+        return VideosService.uploadThumbnailForVideoApiV1VideosVideoIdUploadThumbnailPost(videoId, formData);
     },
 };

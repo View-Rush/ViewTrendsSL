@@ -3,20 +3,24 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { UploadCloud, Trash2, ImageIcon } from "lucide-react";
 import { toast } from "sonner";
+import { videosService } from "@/services/videos.service"; // ✅ import your wrapped service
+import type { ThumbnailUploadResponse } from "@/api"; // generated type
 
 interface Props {
+    userId: string;
     file: File | null;
-    onChange: (file: File | null) => void;
+    onChange: (file: File | null, data?: ThumbnailUploadResponse) => void;
 }
 
-export default function ThumbnailUploader({ file, onChange }: Props) {
+export default function ThumbnailUploader({ userId, file, onChange }: Props) {
     const inputRef = useRef<HTMLInputElement | null>(null);
     const [preview, setPreview] = useState<string | null>(
         file ? URL.createObjectURL(file) : null
     );
     const [dragActive, setDragActive] = useState(false);
+    const [uploading, setUploading] = useState(false);
 
-    const handleFile = (f: File) => {
+    const handleFile = async (f: File) => {
         if (!["image/jpeg", "image/png", "image/webp"].includes(f.type)) {
             toast.error("Only JPG, PNG, and WEBP files are allowed");
             return;
@@ -26,8 +30,22 @@ export default function ThumbnailUploader({ file, onChange }: Props) {
             return;
         }
 
-        onChange(f);
-        setPreview(URL.createObjectURL(f));
+        try {
+            setUploading(true);
+            toast.message("Uploading thumbnail...");
+
+            const result = await videosService.uploadThumbnail(f, userId);
+
+            setPreview(result.public_url);
+            onChange(f, result);
+
+            toast.success("Thumbnail uploaded successfully");
+        } catch (e) {
+            console.error(e);
+            toast.error("Upload failed");
+        } finally {
+            setUploading(false);
+        }
     };
 
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -56,9 +74,10 @@ export default function ThumbnailUploader({ file, onChange }: Props) {
             {!file ? (
                 <div
                     className={`flex flex-col items-center justify-center rounded-xl p-8 text-center cursor-pointer border-2 border-dashed transition-all
-          ${dragActive
-                        ? "border-primary bg-primary/10"
-                        : "border-border bg-secondary/40 hover:border-primary/70"
+          ${
+                        dragActive
+                            ? "border-primary bg-primary/10"
+                            : "border-border bg-secondary/40 hover:border-primary/70"
                     }`}
                     onClick={() => inputRef.current?.click()}
                     onDrop={handleDrop}
@@ -113,10 +132,16 @@ export default function ThumbnailUploader({ file, onChange }: Props) {
                             variant="outline"
                             size="sm"
                             onClick={() => inputRef.current?.click()}
+                            disabled={uploading}
                         >
-                            Change
+                            {uploading ? "Uploading..." : "Change"}
                         </Button>
-                        <Button variant="destructive" size="sm" onClick={handleRemove}>
+                        <Button
+                            variant="destructive"
+                            size="sm"
+                            onClick={handleRemove}
+                            disabled={uploading}
+                        >
                             <Trash2 className="h-4 w-4" />
                         </Button>
                     </div>

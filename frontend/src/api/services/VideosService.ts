@@ -2,8 +2,11 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
+import type { Body_upload_thumbnail_api_v1_videos_upload_thumbnail_post } from '../models/Body_upload_thumbnail_api_v1_videos_upload_thumbnail_post';
+import type { Body_upload_thumbnail_for_video_api_v1_videos__video_id__upload_thumbnail_post } from '../models/Body_upload_thumbnail_for_video_api_v1_videos__video_id__upload_thumbnail_post';
 import type { ThumbnailAnalysisRequest } from '../models/ThumbnailAnalysisRequest';
 import type { ThumbnailAnalysisResponse } from '../models/ThumbnailAnalysisResponse';
+import type { ThumbnailUploadResponse } from '../models/ThumbnailUploadResponse';
 import type { VideoCreate } from '../models/VideoCreate';
 import type { VideoListResponse } from '../models/VideoListResponse';
 import type { VideoResponse } from '../models/VideoResponse';
@@ -177,6 +180,51 @@ export class VideosService {
             query: {
                 'input_value': inputValue,
             },
+            errors: {
+                422: `Validation Error`,
+            },
+        });
+    }
+    /**
+     * Upload a thumbnail image for a video
+     * Uploads a thumbnail to Supabase Storage and returns its public URL.
+     * @param formData
+     * @returns ThumbnailUploadResponse Successful Response
+     * @throws ApiError
+     */
+    public static uploadThumbnailApiV1VideosUploadThumbnailPost(
+        formData: Body_upload_thumbnail_api_v1_videos_upload_thumbnail_post,
+    ): CancelablePromise<ThumbnailUploadResponse> {
+        return __request(OpenAPI, {
+            method: 'POST',
+            url: '/api/v1/videos/upload-thumbnail',
+            formData: formData,
+            mediaType: 'multipart/form-data',
+            errors: {
+                422: `Validation Error`,
+            },
+        });
+    }
+    /**
+     * Upload and attach a thumbnail to a specific video
+     * Uploads a thumbnail to Supabase Storage and updates the video record.
+     * @param videoId
+     * @param formData
+     * @returns VideoResponse Successful Response
+     * @throws ApiError
+     */
+    public static uploadThumbnailForVideoApiV1VideosVideoIdUploadThumbnailPost(
+        videoId: number,
+        formData: Body_upload_thumbnail_for_video_api_v1_videos__video_id__upload_thumbnail_post,
+    ): CancelablePromise<VideoResponse> {
+        return __request(OpenAPI, {
+            method: 'POST',
+            url: '/api/v1/videos/{video_id}/upload-thumbnail',
+            path: {
+                'video_id': videoId,
+            },
+            formData: formData,
+            mediaType: 'multipart/form-data',
             errors: {
                 422: `Validation Error`,
             },

@@ -8,7 +8,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Calendar } from "@/components/ui/calendar";
 import { Clock } from "lucide-react";
 import { toast } from "sonner";
-import ThumbnailUploader from "./ThumbnailUploader";
+import ThumbnailUploader from "../forms/ThumbnailUploader.tsx";
 import ChannelSelector from "./ChannelSelector";
 import TagInput from "./TagInput";
 import type { Channel } from "./types";
@@ -51,6 +51,7 @@ export default function YoutubeMetadataForm({
     const [tags, setTags] = useState<string[]>(prefill?.tags || []);
     const [calendarOpen, setCalendarOpen] = useState(false);
     const [timeOpen, setTimeOpen] = useState(false);
+    const [thumbnailUrl, setThumbnailUrl] = useState<string | null>(prefill?.thumbnail_url || null);
 
     /** Convert duration to PT#M#S */
     const formatDuration = (m: number, s: number) => `PT${m}M${s}S`;
@@ -78,7 +79,7 @@ export default function YoutubeMetadataForm({
             category: form.category,
             language: form.language,
             tags,
-            thumbnail: thumbnailFile?.name || prefill?.thumbnail_url,
+            thumbnail_url: thumbnailUrl || prefill?.thumbnail_url || null,
         });
     };
 
@@ -318,7 +319,14 @@ export default function YoutubeMetadataForm({
                 </div>
 
                 {/* Thumbnail */}
-                <ThumbnailUploader file={thumbnailFile} onChange={setThumbnailFile} />
+                <ThumbnailUploader
+                    userId="demo-user"
+                    file={thumbnailFile}
+                    onChange={(file, data) => {
+                        setThumbnailFile(file);
+                        setThumbnailUrl(data?.public_url || null);
+                    }}
+                />
 
                 {/* Tags */}
                 <div className="md:col-span-2 space-y-3">
