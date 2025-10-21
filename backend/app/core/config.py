@@ -1,9 +1,12 @@
+"""Application settings and environment configuration."""
+
 from pydantic_settings import BaseSettings
 from typing import List
 import json
 
 
 class Settings(BaseSettings):
+    # Application
     PROJECT_NAME: str
     API_V1_STR: str = "/api/v1"
 
@@ -24,6 +27,10 @@ class Settings(BaseSettings):
     # YouTube API
     YOUTUBE_API_KEY: str
 
+    # Supabase (for thumbnail uploads)
+    SUPABASE_URL: str
+    SUPABASE_SERVICE_KEY: str
+
     # CORS
     BACKEND_CORS_ORIGINS: List[str] = []
 
@@ -36,7 +43,7 @@ class Settings(BaseSettings):
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        # Parse CORS origins if it's a JSON string
+        # Parse CORS origins if passed as JSON string in .env
         if isinstance(self.BACKEND_CORS_ORIGINS, str):
             self.BACKEND_CORS_ORIGINS = json.loads(self.BACKEND_CORS_ORIGINS)
 
